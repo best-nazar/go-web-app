@@ -16,6 +16,8 @@ func main() {
 
 	// Set the router as the default one provided by Gin
 	router = gin.Default()
+	// Loading static assets like JS & CSS
+	router.Static("/assets", "./assets")
 
 	// Process the templates at the start so that they don't have to be loaded
 	// from the disk again. This makes serving HTML pages very fast.
