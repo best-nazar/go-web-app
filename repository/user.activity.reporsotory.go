@@ -4,12 +4,12 @@ package repository
 import (
 	"log"
 	"github.com/best-nazar/web-app/db"
-	"github.com/best-nazar/web-app/models"
+	"github.com/best-nazar/web-app/model"
 )
 
 // Logs new User Activity
-func AddUserActivity (activity, data string, userID int64) *models.UserActivity {
-	userActivity := models.UserActivity{
+func AddUserActivity (activity, data string, userID int64) *model.UserActivity {
+	userActivity := model.UserActivity{
 		Activity: activity,
 		Data: data,
 		UserID: uint(userID),

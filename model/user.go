@@ -1,6 +1,6 @@
-// models/user.go
+// model/user.go
 
-package models
+package model
 
 import (
 	"database/sql"

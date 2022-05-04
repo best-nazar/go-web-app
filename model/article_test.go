@@ -1,6 +1,6 @@
-// models/article_test.go
+// model/article_test.go
 
-package models
+package model
 
 import "testing"
 

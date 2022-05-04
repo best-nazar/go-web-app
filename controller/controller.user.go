@@ -1,6 +1,6 @@
-// handlers.user.go
+// controller/user.go
 
-package main
+package controller
 
 import (
 	"errors"
@@ -11,20 +11,20 @@ import (
 	"database/sql"
 
 	"github.com/best-nazar/web-app/helpers"
-	"github.com/best-nazar/web-app/models"
+	"github.com/best-nazar/web-app/model"
 	"github.com/best-nazar/web-app/repository"
 	"github.com/best-nazar/web-app/security"
 	"github.com/gin-gonic/gin"
 )
 
-func showLoginPage(c *gin.Context) {
+func ShowLoginPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
-	render(c, gin.H{
+	Render(c, gin.H{
 		"title": "Login",
 	}, "login.html")
 }
 
-func performLogin(c *gin.Context) {
+func PerformLogin(c *gin.Context) {
 	// Obtain the POSTed username and password values
 	username := c.PostForm("username")
 	password := security.ComputeHmac256(c.PostForm("password"))
@@ -32,7 +32,7 @@ func performLogin(c *gin.Context) {
     var sameSiteCookie http.SameSite;
 	user, recNum := repository.GetUserByUsername(username)
 	// Check if the username/password combination is valid
-	if models.IsPasswordValid(user, password) && recNum > 0 {
+	if model.IsPasswordValid(user, password) && recNum > 0 {
 		// If the username/password is valid set the token in a cookie
 		token := helpers.GenerateSessionToken(strconv.FormatUint(uint64(user.ID), 10))
 
@@ -40,7 +40,7 @@ func performLogin(c *gin.Context) {
 		c.Set("is_logged_in", true)
 		c.SetSameSite(sameSiteCookie)
 
-		render(c, gin.H{
+		Render(c, gin.H{
 			"title": "Successful Login",
 			"payload": &user}, "login-successful.html")
 
@@ -53,7 +53,7 @@ func performLogin(c *gin.Context) {
 	}
 }
 
-func logout(c *gin.Context) {
+func Logout(c *gin.Context) {
     var sameSiteCookie http.SameSite;
 
 	// Clear the cookie
@@ -64,13 +64,13 @@ func logout(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
-func showRegistrationPage(c *gin.Context) {
+func ShowRegistrationPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
-	render(c, gin.H{
+	Render(c, gin.H{
 		"title": "Register"}, "register.html")
 }
 
-func register(c *gin.Context) {
+func Register(c *gin.Context) {
 	// Obtain the POSTed username and password values
 	username := c.PostForm("username")
 	password := security.ComputeHmac256(c.PostForm("password"))
@@ -87,7 +87,7 @@ func register(c *gin.Context) {
 		c.Set("is_logged_in", true)
 		c.SetSameSite(sameSiteCookie)
 
-		render(c, gin.H{
+		Render(c, gin.H{
 			"title": "Successful registration & Login",
 			"payload": &u}, "login-successful.html")
 
@@ -101,14 +101,14 @@ func register(c *gin.Context) {
 }
 
 // Register a new user with the given username and password
-func registerNewUser(name, username, password string, birthday int64) (*models.User, error) {
+func registerNewUser(name, username, password string, birthday int64) (*model.User, error) {
 	if strings.TrimSpace(password) == "" {
 		return nil, errors.New("the password can't be empty")
 	} else if _, r :=repository.GetUserByUsername(username); r > 0 {
 		return nil, errors.New("the username isn't available")
 	}
 
-	user := models.User{
+	user := model.User{
 		Name: name,
 		Birthday: sql.NullInt64{Int64: birthday, Valid: true},
 		Username: username,

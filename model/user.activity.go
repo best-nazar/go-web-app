@@ -1,7 +1,7 @@
-//models.user.activity.go
+//model.user.activity.go
 //
 // User acvitity journal
-package models
+package model
 
 type UserActivity struct {
 	ID        uint   `gorm:"primaryKey"`

@@ -6,7 +6,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/best-nazar/web-app/models"
+	"github.com/best-nazar/web-app/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -49,8 +49,8 @@ func GetDBConnectionInstance() *gorm.DB {
 // Migrate the schema to MySQL
 func runDbMigration(db *gorm.DB) {
 	err := db.AutoMigrate(
-		&models.User{},
-		&models.UserActivity{},
+		&model.User{},
+		&model.UserActivity{},
 	)
 
 	if (err != nil) {

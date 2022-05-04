@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/best-nazar/web-app/models"
+	"github.com/best-nazar/web-app/model"
 	"github.com/gin-gonic/gin"
 )
 
-var tmpUserList []models.User
-var tmpArticleList []models.Article
+var tmpUserList []model.User
+var tmpArticleList []model.Article
 
 // This function is used to do setup before executing the test functions
 func TestMain(m *testing.M) {
