@@ -1,4 +1,4 @@
-// handlers.article.go
+// controller.article.go
 
 package controller
 

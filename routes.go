@@ -41,6 +41,12 @@ func initializeRoutes() {
 		userRoutes.POST("/register", ensureNotLoggedIn(), controller.Register)
 	}
 
+	// Group administrative routes
+	adminRoutes := router.Group("admin")
+	{
+		adminRoutes.GET("/dashboard", ensureLoggedIn(), controller.ShowDashboardPage)
+	}
+
 	// Group article related routes together
 	articleRoutes := router.Group("/article")
 	{

@@ -1,4 +1,4 @@
-// controller/user.go
+// controller.user.go
 
 package controller
 
