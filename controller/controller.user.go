@@ -39,6 +39,8 @@ func PerformLogin(c *gin.Context) {
 		c.SetCookie("token", token, 3600, "", "", false, true)
 		c.Set("is_logged_in", true)
 		c.SetSameSite(sameSiteCookie)
+		c.Request.SetBasicAuth(user.Username, user.Password)
+		c.SetCookie("auth", c.Request.Header.Get("Authorization"), 3600, "", "", false, true)
 
 		Render(c, gin.H{
 			"title": "Successful Login",
@@ -58,6 +60,7 @@ func Logout(c *gin.Context) {
 
 	// Clear the cookie
 	c.SetCookie("token", "", -1, "", "", false, true)
+	c.SetCookie("auth", "", -1, "", "", false, true)
 	c.SetSameSite(sameSiteCookie)
 
 	// Redirect to the home page
@@ -74,6 +77,14 @@ func Register(c *gin.Context) {
 	// Obtain the POSTed username and password values
 	username := c.PostForm("username")
 	password := security.ComputeHmac256(c.PostForm("password"))
+
+	if err := helpers.ValidateUserPassword(password, c.PostForm("password_repeat")); err != nil {
+		c.HTML(http.StatusBadRequest, "register.html", gin.H{
+			"ErrorTitle":   "Passwords",
+			"ErrorMessage": err.Error()})
+		return
+	}
+
 	name := c.PostForm("name")
 	birthday := helpers.StringToTimestamp(c.PostForm("birthday"))
 
@@ -93,7 +104,7 @@ func Register(c *gin.Context) {
 
 	} else {
 		// If the username/password combination is invalid,
-		// show the error message on the login page
+		// show the error message on the Register page
 		c.HTML(http.StatusBadRequest, "register.html", gin.H{
 			"ErrorTitle":   "Registration Failed",
 			"ErrorMessage": err.Error()})
