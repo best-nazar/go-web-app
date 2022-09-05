@@ -13,4 +13,4 @@ This is the code from the article [Building Go Web Applications and Microservice
 - Restart the App to reload rules.
 6. Adding the group:
 - Run query: ```INSERT INTO casbin_rule (p_type, v0, v1) VALUES ('g', 'test1', 'anonymous');```
-- - Restart the App to reload rules.
+- Restart the App to reload rules. More examples at ``__authz_policy.csv``
