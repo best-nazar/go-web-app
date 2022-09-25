@@ -16,13 +16,13 @@ func ShowIndexPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
 	Render(c, gin.H{
 		"title":   "Home Page",
-		"payload": articles}, "index.html")
+		"payload": articles}, "index.html", http.StatusOK)
 }
 
 func ShowArticleCreationPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
 	Render(c, gin.H{
-		"title": "Create New Article"}, "create-article.html")
+		"title": "Create New Article"}, "create-article.html", http.StatusOK)
 }
 
 func GetArticle(c *gin.Context) {
@@ -34,7 +34,7 @@ func GetArticle(c *gin.Context) {
 			// template
 			Render(c, gin.H{
 				"title":   article.Title,
-				"payload": article}, "article.html")
+				"payload": article}, "article.html", http.StatusOK)
 
 		} else {
 			// If the article is not found, abort with an error
@@ -56,7 +56,7 @@ func CreateArticle(c *gin.Context) {
 		// If the article is created successfully, show success message
 		Render(c, gin.H{
 			"title":   "Submission Successful",
-			"payload": a}, "submission-successful.html")
+			"payload": a}, "submission-successful.html", http.StatusOK)
 	} else {
 		// if there was an error while creating the article, abort with an error
 		c.AbortWithStatus(http.StatusBadRequest)

@@ -16,7 +16,7 @@ import (
 
 const (
 	// defaultTableName  if tableName == "", the Adapter will use this default table name.
-	defaultTableName = "casbin_rule"
+	defaultTableName = "casbin_rules"
 
 	// maxParamLength  .
 	maxParamLength = 7

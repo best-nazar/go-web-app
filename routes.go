@@ -3,10 +3,10 @@
 package main
 
 import (
-	"github.com/casbin/casbin/v2"
-	"github.com/gin-contrib/authz"
 	"github.com/best-nazar/web-app/controller"
 	sqladapter "github.com/best-nazar/web-app/db"
+	"github.com/casbin/casbin/v2"
+	"github.com/gin-contrib/authz"
 )
 
 func initializeRoutes() {
@@ -61,6 +61,8 @@ func initializeRoutes() {
 	adminRoutes := router.Group("admin")
 	{
 		adminRoutes.GET("/dashboard", controller.ShowDashboardPage)
+		adminRoutes.GET(("/uroles"), controller.ShowUserRolesPage)
+		adminRoutes.POST(("/uroles"), controller.SaveUserRoles)
 	}
 
 	// Group article related routes together

@@ -1,0 +1,18 @@
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">User</th>
+        <th scope="col">Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .payload}}
+      <tr>
+        <th scope="row">{{.ID}}</th>
+        <td>{{.V0}}</td>
+        <td>{{.V1}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>

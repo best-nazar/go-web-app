@@ -3,11 +3,10 @@
 package controller
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"strings"
-
+	"errors"
 	"database/sql"
 
 	"github.com/best-nazar/web-app/helpers"
@@ -15,13 +14,15 @@ import (
 	"github.com/best-nazar/web-app/repository"
 	"github.com/best-nazar/web-app/security"
 	"github.com/gin-gonic/gin"
+	"github.com/best-nazar/web-app/errorSrc"
 )
 
 func ShowLoginPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
 	Render(c, gin.H{
 		"title": "Login",
-	}, "login.html")
+		"payload": "Login page",
+	}, "login.html", http.StatusOK)
 }
 
 func PerformLogin(c *gin.Context) {
@@ -44,14 +45,13 @@ func PerformLogin(c *gin.Context) {
 
 		Render(c, gin.H{
 			"title": "Successful Login",
-			"payload": &user}, "login-successful.html")
+			"payload": &user}, "login-successful.html", http.StatusOK)
 
 	} else {
 		// If the username/password combination is invalid,
 		// show the error message on the login page
-		c.HTML(http.StatusBadRequest, "login.html", gin.H{
-			"ErrorTitle":   "Login Failed",
-			"ErrorMessage": "Invalid credentials provided"})
+		err := errorSrc.ErrorView{"Login Failed", "Invalid credentials provided"}
+		Render(c, gin.H{"error":  err},"login.html", http.StatusBadRequest)
 	}
 }
 
@@ -69,8 +69,7 @@ func Logout(c *gin.Context) {
 
 func ShowRegistrationPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
-	Render(c, gin.H{
-		"title": "Register"}, "register.html")
+	Render(c, gin.H{"title": "Register"}, "register.html", http.StatusOK)
 }
 
 func Register(c *gin.Context) {
@@ -79,9 +78,8 @@ func Register(c *gin.Context) {
 	password := security.ComputeHmac256(c.PostForm("password"))
 
 	if err := helpers.ValidateUserPassword(password, c.PostForm("password_repeat")); err != nil {
-		c.HTML(http.StatusBadRequest, "register.html", gin.H{
-			"ErrorTitle":   "Passwords",
-			"ErrorMessage": err.Error()})
+		er := errorSrc.ErrorView{"Passwords", err.Error()}
+		Render(c, gin.H{"error":  er},"register.html", http.StatusBadRequest)
 		return
 	}
 
@@ -100,14 +98,13 @@ func Register(c *gin.Context) {
 
 		Render(c, gin.H{
 			"title": "Successful registration & Login",
-			"payload": &u}, "login-successful.html")
+			"payload": &u}, "login-successful.html", http.StatusOK)
 
 	} else {
 		// If the username/password combination is invalid,
 		// show the error message on the Register page
-		c.HTML(http.StatusBadRequest, "register.html", gin.H{
-			"ErrorTitle":   "Registration Failed",
-			"ErrorMessage": err.Error()})
+		er := errorSrc.ErrorView{"Registration Failed", err.Error()}
+		Render(c, gin.H{"error":  er},"register.html", http.StatusBadRequest)
 	}
 }
 

@@ -8,12 +8,6 @@
 
 <div class="panel panel-default col-sm-12">
   <div class="panel-body">
-    <!--If there's an error, display the error-->
-    {{ if .ErrorTitle}}
-    <p class="bg-danger">
-      {{.ErrorTitle}}: {{.ErrorMessage}}
-    </p>
-    {{end}}
     <!--Create a form that POSTs to the `/article/create` route-->
     <form class="form" action="/article/create" method="POST">
       <div class="form-group">

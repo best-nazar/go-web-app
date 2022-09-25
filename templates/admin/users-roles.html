@@ -1,0 +1,27 @@
+<div class="container">
+    <ul class="nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link {{if eq .tab "policy"}} {{print "active"}} {{end}}" aria-current="page" href="/admin/uroles?tab=policy">Policy</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{if eq .tab "group"}} {{print "active"}} {{end}}" href="/admin/uroles?tab=group">Groups</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{if eq .tab "role"}} {{print "active"}} {{end}}" href="/admin/uroles?tab=role">Roles</a>
+        </li>
+      </ul>
+
+      <div class="container">
+        {{ if eq .tab "policy"}}
+          {{ template "policies-table.html" .}}
+        {{end}}
+
+        {{ if eq .tab  "group"}}
+          {{ template "groups-table.html" .}}
+        {{end}}
+
+        {{ if eq .tab  "role"}}
+          {{ template "roles-table.html" .}}
+        {{end}}
+      </div>
+</div>

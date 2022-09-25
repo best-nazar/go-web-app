@@ -33,6 +33,7 @@ func GetDBConnectionInstance() *gorm.DB {
 				log.Fatal(err)
 			} else {
 				runDbMigration(db)
+				insertInitData(db)
 			}
 
             singleInstance = db
@@ -51,9 +52,25 @@ func runDbMigration(db *gorm.DB) {
 	err := db.AutoMigrate(
 		&model.User{},
 		&model.UserActivity{},
+		&model.CasbinRule{},
+		&model.CasbinRole{},
 	)
 
 	if (err != nil) {
 		log.Fatalln(err)
+	}
+}
+
+// Insert initial data to the DB
+func insertInitData(db *gorm.DB) {
+	casbinRole := model.CasbinRole{}
+	res := db.First(&casbinRole)
+
+	if res.Error != nil {
+		db.Model(&model.CasbinRole{}).Create([]map[string]interface{}{
+			{"title": model.GUEST_ROLE, "IsSystem": true},
+			{"title": model.ADMIN_ROLE, "IsSystem": true},
+			{"title": model.USER_ROLE, "IsSystem": true},
+		})
 	}
 }

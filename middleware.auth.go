@@ -4,6 +4,7 @@ package main
 
 import (
 	"github.com/best-nazar/web-app/helpers"
+	"github.com/best-nazar/web-app/model"
 	"github.com/best-nazar/web-app/repository"
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +18,7 @@ func setUserStatus() gin.HandlerFunc {
 			c.Set("is_logged_in", true) // Used for UI/Menu template (see render() in main.go)
 
 			_, id, errt := helpers.RecoverSessionToken(token)
-			
+
 			if errt != nil {
 				c.Set("is_logged_in", false)
 			} else {
@@ -27,8 +28,10 @@ func setUserStatus() gin.HandlerFunc {
 			}
 		} else {
 			c.Set("is_logged_in", false)
-			// Set anonymous user if he's not logged in
-			c.Request.SetBasicAuth("anonymous", "")
+			// Set guest user if he's not logged in
+			if c.Request.Header.Get("Authorization") == "" {
+				c.Request.SetBasicAuth(model.GUEST_ROLE, "")
+			}
 		}
 	}
 }

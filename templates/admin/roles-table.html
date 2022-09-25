@@ -1,0 +1,62 @@
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Title</th>
+        <th scope="col">Type</th>
+        <th scope="col">Created At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .payload}}
+      <tr>
+        <th scope="row">{{.ID}}</th>
+        <td>{{.Title}}</td>
+        <td>
+          {{ if .IsSystem }}
+            System role
+          {{ else }}
+            Custom role
+          {{ end }}
+        </td>
+        <td>{{.CreatedAt}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
+  Add Role
+</button>
+
+
+  <!-- Modal -->
+<div class="modal fade" id="addRoleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="row g-3" action="uroles?tab=role" method="post" name="groupRoleForm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addRoleModalLabel">Add group role</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="roleFormControlInput1" class="form-label">Role title</label>
+            <input 
+              type="text" 
+              class="form-control {{if eq .errorTitle nil }} {{ print " is-valid" }} {{else}} {{print " is-invalid"}} {{end}}" 
+              id="roleFormControlInput1" 
+              name="title" 
+              placeholder="manager" 
+              required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
