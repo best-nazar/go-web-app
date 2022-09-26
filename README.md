@@ -31,6 +31,11 @@ Note: Make sure there is no double slashed in URL like: //u/login (must be /u/lo
 1. Response is supplied in: "payload" variable.
 2. Error response (no dot at the end of the sentense):
 ```
-
+errView := errorSrc.ErrorView{"Validation title", "Details"}
+		Render(c, gin.H{
+			"payload": data,
+			"error": errView},
+			"template.html",
+			http.StatusBadRequest)
 ```
 

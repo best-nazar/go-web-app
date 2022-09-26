@@ -22,7 +22,8 @@ func initializeRoutes() {
 	if err != nil {
 		panic(err)
 	}
-
+	// Load the APP configuration
+	router.Use(setConfiguration())
 	// Use the setUserStatus middleware for every route to set a flag
 	// indicating whether the request was from an authenticated user or not
 	router.Use(setUserStatus())
