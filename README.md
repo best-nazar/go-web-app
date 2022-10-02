@@ -28,14 +28,42 @@ Note: Make sure there is no double slashed in URL like: //u/login (must be /u/lo
 
 ##Code conventions:
 
-1. Response is supplied in: "payload" variable.
-2. Error response (no dot at the end of the sentense):
+1. Response:
 ```
-errView := errorSrc.ErrorView{"Validation title", "Details"}
+	Render(c, gin.H{
+		"title": "Users and Roles",
+		"payload": casbins,
+		"admin-dashboard.html",
+		http.StatusOk)
+```
+2. Error handling:
+2.1. Add the binding to the Model:
+```
+type CasbinRole struct {
+	ID     			uint   		`gorm:"primaryKey"`
+	Title  			string 		`json:"title" gorm:"index" form:"title" binding:"alphanum,min=3"`
+	InheritedFrom 	string		`json:"inheritedFrom" gorm:"index" form:"inheritedFrom" binding:"excludesall= "`
+}
+```
+2.2. Check the errorMsgHandl.go, Make sure the binding tag is in switch/case.
+2.3. In controlller:
+2.3.1 Validate the request:
+```
+if err != nil {
+	casbins := repository.GetGroupRoles()
+	errView := errorSrc.MakeErrorView("Add role", err)
+
+	err := []string{err.Error()}
+	errView := errorSrc.MakeErrorView("Add role", err)
 		Render(c, gin.H{
 			"payload": data,
 			"error": errView},
 			"template.html",
 			http.StatusBadRequest)
+}			
 ```
-
+Note: 
+3. Groups hierarchy
+- guest
+- - member
+- - - admin

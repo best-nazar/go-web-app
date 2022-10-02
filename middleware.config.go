@@ -6,17 +6,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v3"
+	"github.com/best-nazar/web-app/model"
 )
-
-type config struct {
-	DefaultCasbinGroup string `yaml:"default-casbin-group"`
-	Tags []string `yaml:"tags"`
-}
 
 // Sets configuration to the gin.c
 func setConfiguration() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		conf := config{}
+		conf := model.Config{}
 		data := loadYamlFile()
 		err := yaml.Unmarshal([]byte(data), &conf)
 

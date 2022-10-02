@@ -8,11 +8,11 @@ import (
 )
 
 // Gets User by the username
-func GetUserByUsername(username string) (model.User, int64) {
+func GetUserByUsername(username string) (*model.User, int64) {
 	var user model.User
 	result := db.GetDBConnectionInstance().First(&user, "username = ?", username)
 
-	return user, result.RowsAffected
+	return &user, result.RowsAffected
 }
 
 // Adds new User entity

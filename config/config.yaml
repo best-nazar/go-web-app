@@ -1,1 +1,3 @@
-default-casbin-group: guest
+# Gin App configuration
+# Set a default role to newly registered user. Examples: guest, member, admin.
+default-casbin-group: admin

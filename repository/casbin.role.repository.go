@@ -13,3 +13,9 @@ func GetGroupRoles() []model.CasbinRole {
 
 	return groupRoles
 }
+
+func SaveCasbinRole(casbinRole *model.CasbinRole) model.CasbinRole {
+	db.GetDBConnectionInstance().Create(&casbinRole)
+
+	return *casbinRole
+}

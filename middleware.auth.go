@@ -7,6 +7,9 @@ import (
 	"github.com/best-nazar/web-app/model"
 	"github.com/best-nazar/web-app/repository"
 	"github.com/gin-gonic/gin"
+	sqladapter "github.com/best-nazar/web-app/db"
+	"github.com/casbin/casbin/v2"
+	"github.com/gin-contrib/authz"
 )
 
 // This middleware sets whether the user is logged in or not
@@ -33,5 +36,24 @@ func setUserStatus() gin.HandlerFunc {
 				c.Request.SetBasicAuth(model.GUEST_ROLE, "")
 			}
 		}
+	}
+}
+
+func checkCasbinRules() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Initialize an adapter and use it in a Casbin enforcer:
+		// the default table name is "casbin_rule".
+		// If it doesn't exist, the adapter will create it automatically.
+		a, err := sqladapter.NewAdapter(sqladapter.GetDBConnectionInstance())
+		if err != nil {
+			panic(err)
+		}
+		// load the casbin model and policy from file "authz_policy.csv", database is also supported.
+		casbinEnforcer, err := casbin.NewEnforcer("authz_model.conf", a)
+		if err != nil {
+			panic(err)
+		}
+		
+		authz.NewAuthorizer(casbinEnforcer)(c)
 	}
 }

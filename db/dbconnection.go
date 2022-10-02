@@ -68,9 +68,9 @@ func insertInitData(db *gorm.DB) {
 
 	if res.Error != nil {
 		db.Model(&model.CasbinRole{}).Create([]map[string]interface{}{
-			{"title": model.GUEST_ROLE, "IsSystem": true},
-			{"title": model.ADMIN_ROLE, "IsSystem": true},
-			{"title": model.USER_ROLE, "IsSystem": true},
+			{"title": model.GUEST_ROLE, "IsSystem": true, "InheritedFrom": ""},
+			{"title": model.USER_ROLE, "IsSystem": true, "InheritedFrom": model.GUEST_ROLE},
+			{"title": model.ADMIN_ROLE, "IsSystem": true, "InheritedFrom": model.GUEST_ROLE + "," + model.USER_ROLE},
 		})
 	}
 }

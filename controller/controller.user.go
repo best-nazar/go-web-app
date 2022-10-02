@@ -30,18 +30,11 @@ func PerformLogin(c *gin.Context) {
 	username := c.PostForm("username")
 	password := security.ComputeHmac256(c.PostForm("password"))
 
-    var sameSiteCookie http.SameSite;
 	user, recNum := repository.GetUserByUsername(username)
 	// Check if the username/password combination is valid
-	if model.IsPasswordValid(user, password) && recNum > 0 {
+	if model.IsPasswordValid(*user, password) && recNum > 0 {
 		// If the username/password is valid set the token in a cookie
-		token := helpers.GenerateSessionToken(strconv.FormatUint(uint64(user.ID), 10))
-
-		c.SetCookie("token", token, 3600, "", "", false, true)
-		c.Set("is_logged_in", true)
-		c.SetSameSite(sameSiteCookie)
-		c.Request.SetBasicAuth(user.Username, user.Password)
-		c.SetCookie("auth", c.Request.Header.Get("Authorization"), 3600, "", "", false, true)
+		saveAuthToken(c, user)
 
 		Render(c, gin.H{
 			"title": "Successful Login",
@@ -50,7 +43,7 @@ func PerformLogin(c *gin.Context) {
 	} else {
 		// If the username/password combination is invalid,
 		// show the error message on the login page
-		err := errorSrc.ErrorView{"Login Failed", "Invalid credentials provided"}
+		err := errorSrc.MakeErrorView("Login Failed", errors.New("invalid credentials provided"))
 		Render(c, gin.H{"error":  err},"login.html", http.StatusBadRequest)
 	}
 }
@@ -75,26 +68,27 @@ func ShowRegistrationPage(c *gin.Context) {
 func Register(c *gin.Context) {
 	// Obtain the POSTed username and password values
 	username := c.PostForm("username")
-	password := security.ComputeHmac256(c.PostForm("password"))
 
-	if err := helpers.ValidateUserPassword(password, c.PostForm("password_repeat")); err != nil {
-		er := errorSrc.ErrorView{"Passwords", err.Error()}
+	if c.PostForm("password") != c.PostForm("password_repeat") {
+		er := errorSrc.MakeErrorView("Password", errors.New("provided passwords do not match"))
 		Render(c, gin.H{"error":  er},"register.html", http.StatusBadRequest)
 		return
 	}
 
 	name := c.PostForm("name")
 	birthday := helpers.StringToTimestamp(c.PostForm("birthday"))
+	config, exist := c.Get("config")
+	role := config.(model.Config)
 
-    var sameSiteCookie http.SameSite;
+	if !exist {
+		panic("The Key 'default-casbin-group' is not found in config.yaml")
+	}
 
-	if u, err := registerNewUser(name, username, password, birthday); err == nil {
+	password := security.ComputeHmac256(c.PostForm("password"))
+
+	if u, err := registerNewUser(name, username, password, role.DefaultCasbinGroup, birthday); err == nil {
 		// If the user is created, set the token in a cookie and log the user in
-		token := helpers.GenerateSessionToken(strconv.FormatUint(uint64(u.ID), 10))
-
-		c.SetCookie("token", token, 3600, "", "", false, true)
-		c.Set("is_logged_in", true)
-		c.SetSameSite(sameSiteCookie)
+		saveAuthToken(c, u)
 
 		Render(c, gin.H{
 			"title": "Successful registration & Login",
@@ -103,13 +97,13 @@ func Register(c *gin.Context) {
 	} else {
 		// If the username/password combination is invalid,
 		// show the error message on the Register page
-		er := errorSrc.ErrorView{"Registration Failed", err.Error()}
+		er := errorSrc.MakeErrorView("Registration Failed", err)
 		Render(c, gin.H{"error":  er},"register.html", http.StatusBadRequest)
 	}
 }
 
 // Register a new user with the given username and password
-func registerNewUser(name, username, password string, birthday int64) (*model.User, error) {
+func registerNewUser(name, username, password, role string, birthday int64) (*model.User, error) {
 	if strings.TrimSpace(password) == "" {
 		return nil, errors.New("the password can't be empty")
 	} else if _, r :=repository.GetUserByUsername(username); r > 0 {
@@ -124,6 +118,18 @@ func registerNewUser(name, username, password string, birthday int64) (*model.Us
 	}
 
 	repository.AddNewUser(&user)
+	repository.AddCasbinUserRole(username, role)
 
 	return &user, nil
+}
+
+// Save Auth data and token for UI
+func saveAuthToken(c *gin.Context, user *model.User) {
+	token := helpers.GenerateSessionToken(strconv.FormatUint(uint64(user.ID), 10))
+	c.SetCookie("token", token, 3600, "", "", false, true)
+	c.Set("is_logged_in", true)
+	var sameSiteCookie http.SameSite;
+	c.SetSameSite(sameSiteCookie)
+	c.Request.SetBasicAuth(user.Username, user.Password)
+	c.SetCookie("auth", c.Request.Header.Get("Authorization"), 3600, "", "", false, true)
 }

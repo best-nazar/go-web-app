@@ -4,12 +4,16 @@ package controller
 
 import (
 	"net/http"
+	"strings"
 
-	"github.com/best-nazar/web-app/repository"
-	"github.com/gin-gonic/gin"
 	"github.com/best-nazar/web-app/errorSrc"
 	"github.com/best-nazar/web-app/model"
+	"github.com/best-nazar/web-app/repository"
+	"github.com/gin-gonic/gin"
 )
+
+// use a single instance of Validate, it caches struct info
+//var validate *validator.Validate
 
 func ShowDashboardPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
@@ -42,15 +46,17 @@ func ShowUserRolesPage(c *gin.Context) {
 		"title":   "Users and Roles",
 		"page": "users-roles.html",
 		"tab": tabName,
-		"payload": casbins}, "admin-dashboard.html", http.StatusOK)
+		"payload": casbins,
+		}, "admin-dashboard.html", http.StatusOK)
 }
 
 func SaveUserRoles(c *gin.Context) {
 	var role model.CasbinRole
+	err := c.ShouldBind(&role)
 
-	if err := c.ShouldBind(&role); err != nil {
+	if err != nil {
 		casbins := repository.GetGroupRoles()
-		errView := errorSrc.ErrorView{"Role Title validation Error", "Letters and numbers are allowed. Must contain more than 3 letters."}
+		errView := errorSrc.MakeErrorView("Add role", err)
 
 		Render(c, gin.H{
 			"title":   "Users and Roles",
@@ -62,7 +68,13 @@ func SaveUserRoles(c *gin.Context) {
 			http.StatusBadRequest)
 		return
 	}
+	// If it's a UI Form request, we need convert array of string to comma separated strings
+	postFormInheritance := c.PostFormArray("inheritedFrom")
+	if len(postFormInheritance) >0 {
+		role.InheritedFrom = strings.Join(postFormInheritance, ",")
+	}
+
+	repository.SaveCasbinRole(&role)
 
 	c.Redirect(http.StatusFound, "/admin/uroles?tab=role")
-	 
 }

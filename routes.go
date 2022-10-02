@@ -4,30 +4,16 @@ package main
 
 import (
 	"github.com/best-nazar/web-app/controller"
-	sqladapter "github.com/best-nazar/web-app/db"
-	"github.com/casbin/casbin/v2"
-	"github.com/gin-contrib/authz"
 )
 
 func initializeRoutes() {
-	// Initialize an adapter and use it in a Casbin enforcer:
-	// the default table name is "casbin_rule".
-	// If it doesn't exist, the adapter will create it automatically.
-	a, err := sqladapter.NewAdapter(sqladapter.GetDBConnectionInstance())
-	if err != nil {
-		panic(err)
-	}
-	// load the casbin model and policy from file "authz_policy.csv", database is also supported.
-	e, err := casbin.NewEnforcer("authz_model.conf", a)
-	if err != nil {
-		panic(err)
-	}
 	// Load the APP configuration
 	router.Use(setConfiguration())
 	// Use the setUserStatus middleware for every route to set a flag
 	// indicating whether the request was from an authenticated user or not
 	router.Use(setUserStatus())
-	router.Use(authz.NewAuthorizer(e))
+	// ACL or RBAC chhecks
+	router.Use(checkCasbinRules())
 
 	// Handle the index route
 	router.GET("/", controller.ShowIndexPage)
