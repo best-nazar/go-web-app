@@ -3,13 +3,13 @@
 package main
 
 import (
+	sqladapter "github.com/best-nazar/web-app/db"
 	"github.com/best-nazar/web-app/helpers"
 	"github.com/best-nazar/web-app/model"
 	"github.com/best-nazar/web-app/repository"
-	"github.com/gin-gonic/gin"
-	sqladapter "github.com/best-nazar/web-app/db"
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-contrib/authz"
+	"github.com/gin-gonic/gin"
 )
 
 // This middleware sets whether the user is logged in or not
@@ -21,20 +21,26 @@ func setUserStatus() gin.HandlerFunc {
 			c.Set("is_logged_in", true) // Used for UI/Menu template (see render() in main.go)
 
 			_, id, errt := helpers.RecoverSessionToken(token)
+			c.Set("user_id", int(id))
 
 			if errt != nil {
 				c.Set("is_logged_in", false)
 			} else {
-				if c.FullPath() != "" {
-					repository.AddUserActivity(c.FullPath(), "path", id)
+				cf := c.MustGet("config")
+				config := cf.(model.Config)
+				if config.UserActivityLogging && c.FullPath() != "" {
+					repository.AddUserActivity(c.Request.URL.String(), "path", id)
 				}
 			}
+
+			c.Next()
 		} else {
 			c.Set("is_logged_in", false)
 			// Set guest user if he's not logged in
 			if c.Request.Header.Get("Authorization") == "" {
 				c.Request.SetBasicAuth(model.GUEST_ROLE, "")
 			}
+			c.Next()
 		}
 	}
 }
@@ -55,5 +61,6 @@ func checkCasbinRules() gin.HandlerFunc {
 		}
 		
 		authz.NewAuthorizer(casbinEnforcer)(c)
+		c.Next()
 	}
 }

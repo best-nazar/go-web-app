@@ -1,3 +1,5 @@
 # Gin App configuration
 # Set a default role to newly registered user. Examples: guest, member, admin.
 default-casbin-group: admin
+# Turn on/off user activity logging to the DB
+user-activity-logging: false

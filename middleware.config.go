@@ -21,6 +21,7 @@ func setConfiguration() gin.HandlerFunc {
 		}
 		
 		c.Set("config", conf)
+		c.Next()
 	}
 }
 // Load the configuration from YAML

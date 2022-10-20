@@ -4,18 +4,28 @@ package errorSrc
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
 	"github.com/go-playground/locales/en"
-	"github.com/go-playground/validator/v10"
 	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
 )
 
 func MakeErrorView(title string, err error) ErrorView {
 	errView := ErrorView{
 		Title: title, 
 		Messages: parseError(err),
+	}
+	
+	return errView
+}
+
+func MakeErrorViewFrom(title, field string, code int) ErrorView {
+	errView := ErrorView{
+		Title: title, 
+		Messages: codeError(field, code),
 	}
 	
 	return errView
@@ -85,4 +95,14 @@ func parseFieldError(e validator.FieldError) string {
 
 func parseMarshallingError(e json.UnmarshalTypeError) string {
 	return fmt.Sprintf("The field %s must be a %s", e.Field, e.Type.String())
+}
+
+func codeError(field string, code int) []string {
+	var out []string
+	switch code {
+		case http.StatusNotFound:
+			out = append(out, fmt.Sprintf("The field %s is invalid or object is not found", field))
+	}
+
+	return out
 }

@@ -50,6 +50,7 @@ func initializeRoutes() {
 		adminRoutes.GET("/dashboard", controller.ShowDashboardPage)
 		adminRoutes.GET(("/uroles"), controller.ShowUserRolesPage)
 		adminRoutes.POST(("/uroles"), controller.SaveUserRoles)
+		adminRoutes.POST(("/uroles/delete"), controller.DeleteUserRoles)
 	}
 
 	// Group article related routes together

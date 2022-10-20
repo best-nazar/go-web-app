@@ -67,3 +67,10 @@ Note:
 - guest
 - - member
 - - - admin
+
+4. User Activity Data
+Keeps the history of actions like: page opened, data added/updated/deleted
+Turn on/off in config.yaml
+```
+user-activity-logging: true
+```

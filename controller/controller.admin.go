@@ -59,7 +59,7 @@ func SaveUserRoles(c *gin.Context) {
 		errView := errorSrc.MakeErrorView("Add role", err)
 
 		Render(c, gin.H{
-			"title":   "Users and Roles",
+			"title": "Users and Roles",
 			"page": "users-roles.html",
 			"tab": "role",
 			"payload": casbins,
@@ -75,6 +75,44 @@ func SaveUserRoles(c *gin.Context) {
 	}
 
 	repository.SaveCasbinRole(&role)
+
+	c.Redirect(http.StatusFound, "/admin/uroles?tab=role")
+}
+
+func DeleteUserRoles(c *gin.Context) {
+	var role model.CasbinRole
+	role.Title="ThisRoleWillBeDeleted" //validation bypassing.
+	err := c.ShouldBind(&role)
+
+	if err != nil {
+		errView := errorSrc.MakeErrorView("Delete role", err)
+		casbins := repository.GetGroupRoles()
+
+		Render(c, gin.H{
+			"title": "Users and Roles",
+			"page": "users-roles.html",
+			"tab": "role",
+			"payload": casbins,
+			"error": errView},
+			"admin-dashboard.html",
+			http.StatusBadRequest)
+		return
+	}
+
+	recNo, _ := repository.DeleteCasbinRole(&role)
+
+	if recNo == 0 {
+		errView := errorSrc.MakeErrorViewFrom("Delete role", "ID", http.StatusNotFound)
+		Render(c, gin.H{
+			"title": "Users and Roles",
+			"page": "users-roles.html",
+			"tab": "role",
+			"payload": nil,
+			"error": errView},
+			"admin-dashboard.html",
+			http.StatusNotFound)
+		return
+	}
 
 	c.Redirect(http.StatusFound, "/admin/uroles?tab=role")
 }

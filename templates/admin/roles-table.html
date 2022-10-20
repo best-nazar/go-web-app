@@ -5,22 +5,35 @@
         <th scope="col">Title</th>
         <th scope="col">Type</th>
         <th scope="col">Created At</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
       {{range .payload}}
-      <tr>
-        <th scope="row">{{.ID}}</th>
-        <td>{{.Title}}</td>
-        <td>
-          {{ if .IsSystem }}
-            System role
-          {{ else }}
-            Custom role
-          {{ end }}
-        </td>
-        <td>{{.CreatedAt}}</td>
-      </tr>
+        {{ if .IsSystem }}
+          <tr>
+            <th scope="row">{{.ID}}</th>
+            <td>{{.Title}}</td>
+            <td>
+                System
+            </td>
+            <td>{{.CreatedAt}}</td>
+            <td></td>
+          </tr>
+        {{ else }}
+          <tr>
+            <th scope="row">{{.ID}}</th>
+            <td>{{.Title}}</td>
+            <td>
+                Custom
+            </td>
+            <td>{{.CreatedAt}}</td>
+            <td>
+              <!-- Button trigger modal -->
+              <button id="trigger-modal-delete{{.ID}}" type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#commonConfirmationModal" value="{{.ID}};{{.Title}}">Delete</button>
+            </td>
+          </tr>
+        {{ end }}
       {{end}}
     </tbody>
   </table>
@@ -71,3 +84,5 @@
     </form>
   </div>
 </div>
+
+{{ template "modal-delete.html" dict "post_url" "/admin/uroles/delete" "modal_title" "Delete Role" }}

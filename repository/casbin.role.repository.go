@@ -19,3 +19,9 @@ func SaveCasbinRole(casbinRole *model.CasbinRole) model.CasbinRole {
 
 	return *casbinRole
 }
+
+func DeleteCasbinRole(casbinRole *model.CasbinRole) (int64, error) {
+	res := db.GetDBConnectionInstance().Delete(&casbinRole)
+	
+	return res.RowsAffected, res.Error
+}

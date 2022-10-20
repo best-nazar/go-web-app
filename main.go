@@ -3,6 +3,9 @@
 package main
 
 import (
+	"errors"
+	"html/template"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,6 +23,10 @@ func main() {
 
 	// Process the templates at the start so that they don't have to be loaded
 	// from the disk again. This makes serving HTML pages very fast.
+	router.SetFuncMap(template.FuncMap{
+        "dict": templateDict,
+    })
+
 	router.LoadHTMLGlob("templates/*/*.html")
 
 	// Initialize the routes
@@ -27,4 +34,22 @@ func main() {
 
 	// Start serving the application
 	router.Run()
+}
+
+// Custom function to pass data inside Templates.
+// Usage: {{ template "common-confirmation.html" dict "post_url" "?go/there" }}
+// Usege: {{template "userlist.html" dict "Users" .MostPopular "Current" .CurrentUser}}
+func templateDict (values ...interface{}) (map[string]interface{}, error) {
+	if len(values)%2 != 0 {
+		return nil, errors.New("invalid dict call")
+	}
+	dict := make(map[string]interface{}, len(values)/2)
+	for i := 0; i < len(values); i+=2 {
+		key, ok := values[i].(string)
+		if !ok {
+			return nil, errors.New("dict keys must be strings")
+		}
+		dict[key] = values[i+1]
+	}
+	return dict, nil
 }
