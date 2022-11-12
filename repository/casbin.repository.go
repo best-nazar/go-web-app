@@ -31,6 +31,13 @@ func GetCasbinRoles() []model.CasbinRule {
 	return casbinRoles
 }
 
+func FindCasbinRoleById (ID *uint) (*model.CasbinRule, error) {
+	var casbinRule model.CasbinRule
+	res := db.GetDBConnectionInstance().First(&casbinRule, ID)
+
+	return &casbinRule, res.Error
+}
+
 // Adds the binding of Casbin Role to the Username
 func AddCasbinUserRole(username string, role string) *model.CasbinRule {
 	casbinRule := model.CasbinRule{
@@ -44,7 +51,7 @@ func AddCasbinUserRole(username string, role string) *model.CasbinRule {
 	return &casbinRule
 }
 
-func SaveAdminCasbinUserRole(username string) *[]model.CasbinRule {
+func CreateAdminCasbinUserRole(username string) *[]model.CasbinRule {
 	var casbinRules = []model.CasbinRule{
 		{P_type: roleDefinition,
 		V0: username,
@@ -60,4 +67,10 @@ func SaveAdminCasbinUserRole(username string) *[]model.CasbinRule {
 	db.GetDBConnectionInstance().Create(&casbinRules)
 
 	return &casbinRules
+}
+
+func UpdateCusbinRule(crule *model.CasbinRule) (*model.CasbinRule, error) {
+	res := db.GetDBConnectionInstance().Model(&crule).Updates(&crule)
+
+	return crule, res.Error
 }

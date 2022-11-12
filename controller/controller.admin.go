@@ -4,6 +4,7 @@ package controller
 
 import (
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/best-nazar/web-app/errorSrc"
@@ -24,6 +25,7 @@ func ShowDashboardPage(c *gin.Context) {
 
 func ShowUserRolesPage(c *gin.Context) {
 	var casbins interface{}
+	var groupRoles interface{}
 	tabMappings := map[string]string{"policy": "p", "role": "r", "group": "g"}
 	tabName := c.Query("tab")
 
@@ -35,6 +37,7 @@ func ShowUserRolesPage(c *gin.Context) {
 			casbins = repository.GetGroupRoles()
 		case "g":
 			casbins = repository.GetCasbinRoles()
+			groupRoles = repository.GetGroupRoles()
 		}
 	} else {
 		// default or not in tabMappings
@@ -47,6 +50,7 @@ func ShowUserRolesPage(c *gin.Context) {
 		"page": "users-roles.html",
 		"tab": tabName,
 		"payload": casbins,
+		"roles": groupRoles,
 		}, "admin-dashboard.html", http.StatusOK)
 }
 
@@ -115,4 +119,51 @@ func DeleteUserRoles(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusFound, "/admin/uroles?tab=role")
+}
+
+func UpdateUserGroups (c *gin.Context) {
+	var errView = errorSrc.ErrorView{}
+	var jRole = model.CasbinRole{}
+
+	c.ShouldBind(&jRole)
+
+	role, rErr := repository.FindCasbinRolebyName(jRole.Title)
+	group, gErr := repository.FindCasbinRoleById(&jRole.ID)
+
+	if rErr != nil {
+		errView = errorSrc.MakeErrorViewFrom("Role", "title", http.StatusNotFound)
+	} else if gErr != nil {
+		errView = errorSrc.MakeErrorViewFrom("Role", "ID", http.StatusNotFound)
+	}
+
+	if !reflect.DeepEqual(errView, errorSrc.ErrorView{}) {
+		Render(c, gin.H{
+			"title": "Users and Roles",
+			"page": "users-roles.html",
+			"tab": "role",
+			"payload": nil,
+			"error": errView},
+			"admin-dashboard.html",
+			http.StatusNotFound)
+		return
+	}
+
+	group.V1 = role.Title
+
+	_, nErr := repository.UpdateCusbinRule(group)
+
+	if nErr != nil {
+		errView := errorSrc.MakeErrorViewFrom("Role", "ID", http.StatusBadRequest)
+		Render(c, gin.H{
+			"title": "Users and Roles",
+			"page": "users-roles.html",
+			"tab": "role",
+			"payload": nil,
+			"error": errView},
+			"admin-dashboard.html",
+			http.StatusBadRequest)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/admin/uroles?tab=group")
 }

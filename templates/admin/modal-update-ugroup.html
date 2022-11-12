@@ -1,0 +1,51 @@
+<!--
+    Common Confirmation modal window
+    Action UPDATE
+
+    Example:
+    { { template "modal-update.html" dict "post_url" "?go-to" "modal_title" "Update Group" "modal_text_value" "User:" "modal_list" .payload } }
+
+    required vars:
+        .post_url
+        .modal_title
+        .modal_text_value
+        .modal_list (range)
+
+    custom.js controls:    
+    id: ID
+    label: modal-update-label
+    title: title
+-->
+<div class="modal fade" id="commonConfirmationModal" tabindex="-1" aria-labelledby="commonConfirmationLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="row g-3" action="{{ .post_url }}" method="post" name="commonConfirmationUpdForm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="commonConfirmationLabel">{{ .modal_title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <label class="col-sm-3 col-form-label" id="modal-label">{{ .modal_text_value }}</label>
+                        <span class="input-group-text" id="modal-update-label">see custom.js</span>
+                
+                        <input type="hidden" value="see custom.js" name="ID" id="ID">
+                    </div>
+                    
+                    <div class="dropdown">                    
+                        <label class="col-sm-3 col-form-label" id="modal-label">Select one:</label>
+                        <select class="btn btn-secondary dropdown-toggle" name="title" >
+                            {{range .modal_list}}
+                                <option class="dropdown-item" value="{{ .Title }}" >{{ .Title }}</option>
+                            {{ end }}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-primary">Yes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

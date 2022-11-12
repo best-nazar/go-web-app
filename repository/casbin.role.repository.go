@@ -25,3 +25,10 @@ func DeleteCasbinRole(casbinRole *model.CasbinRole) (int64, error) {
 	
 	return res.RowsAffected, res.Error
 }
+
+func FindCasbinRolebyName(title string) (model.CasbinRole, error) {
+	var role model.CasbinRole
+	res := db.GetDBConnectionInstance().First(&role, "title=?", title)
+
+	return role, res.Error
+}

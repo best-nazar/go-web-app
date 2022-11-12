@@ -11,3 +11,17 @@ buttons.forEach(btn => {
         document.getElementById("modal-delete-value").value = values[1];
     });
  });
+
+// For Modal Update
+ var editButtons = document.querySelectorAll("button[id^=trigger-modal-update]");
+
+ editButtons.forEach(btn => {
+    btn.addEventListener('click', event => {
+        var values = event.target.value.split(";") //"ID;V0;V1"
+        var id = values[0];
+        var v0 = values[1];
+
+        document.getElementById("ID").value = id;
+        document.getElementById("modal-update-label").innerHTML = v0;
+    });
+ });

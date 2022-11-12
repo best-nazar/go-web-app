@@ -66,7 +66,6 @@ func ShowRegistrationPage(c *gin.Context) {
 }
 
 func Register(c *gin.Context) {
-	// Obtain the POSTed username and password values
 	username := c.PostForm("username")
 
 	if c.PostForm("password") != c.PostForm("password_repeat") {
