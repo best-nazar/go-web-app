@@ -26,7 +26,7 @@ func GetDBConnectionInstance() *gorm.DB {
             log.Println("Creating single instance now.")
 
 			// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
-			dsn := "testu1:1234@tcp(127.0.0.1:3306)/test_crud?charset=utf8mb4&parseTime=True&loc=Local"
+			dsn := "testu1:1234@tcp(localhost:3306)/test_crud?charset=utf8mb4&parseTime=True&loc=Local"
 			db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 			
 			if err!=nil {
@@ -68,9 +68,9 @@ func insertInitData(db *gorm.DB) {
 
 	if res.Error != nil {
 		db.Model(&model.CasbinRole{}).Create([]map[string]interface{}{
-			{"title": model.GUEST_ROLE, "IsSystem": true, "InheritedFrom": ""},
-			{"title": model.USER_ROLE, "IsSystem": true, "InheritedFrom": model.GUEST_ROLE},
-			{"title": model.ADMIN_ROLE, "IsSystem": true, "InheritedFrom": model.GUEST_ROLE + "," + model.USER_ROLE},
+			{"title": model.GUEST_ROLE, "IsSystem": true, "Description": "limited access"},
+			{"title": model.USER_ROLE, "IsSystem": true, "Description": "common role"},
+			{"title": model.ADMIN_ROLE, "IsSystem": true, "Description": "system administrator"},
 		})
 	}
 }

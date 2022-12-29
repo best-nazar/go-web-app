@@ -1,6 +1,11 @@
 // User Casbin (RBAC)
 package model
 
+const (
+	GROUP_TYPE_G = "g"
+	GROUP_TYPE_P = "p"
+)
+
 type CasbinRule struct {
 	ID      uint    `gorm:"primaryKey"`
 	P_type	string	`json:"p-type" gorm:"index"`

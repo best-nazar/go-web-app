@@ -13,6 +13,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+var errorOtput []string
+
 func MakeErrorView(title string, err error) ErrorView {
 	errView := ErrorView{
 		Title: title, 
@@ -98,11 +100,12 @@ func parseMarshallingError(e json.UnmarshalTypeError) string {
 }
 
 func codeError(field string, code int) []string {
-	var out []string
 	switch code {
 		case http.StatusNotFound:
-			out = append(out, fmt.Sprintf("The field %s is invalid or object is not found", field))
+			errorOtput = append(errorOtput, fmt.Sprintf("The field '%s' is invalid or object is not found", field))
+		case http.StatusBadRequest:
+			errorOtput = append(errorOtput, fmt.Sprintf("The field '%s' has invalid value", field))
 	}
 
-	return out
+	return errorOtput
 }

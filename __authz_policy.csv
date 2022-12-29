@@ -1,8 +1,0 @@
-p, guest, /, GET
-p, guest, /u/*, *
-p, guest, /article/view/*, GET
-p, admin, /admin/*, *
-p, admin, /article/create, *
-g, test1, guest
-g, test2, admin
-g, test2, guest

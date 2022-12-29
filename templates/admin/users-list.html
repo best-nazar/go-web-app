@@ -1,0 +1,64 @@
+<!--
+    {{ len (printf "a%*s" 3 "") }} will output 4 (Increment)
+    {{ len (slice (printf "%*s" 3 "") 1) }} will output 2 (Decrement)
+-->
+
+{{ template "header.html" . }}
+<!-- local vars -->
+{{ $activeTab := .activeTab }}
+
+<div class="container">
+    <ul class="nav nav-pills">
+        {{range .roles }}
+        <li class="nav-item">
+          <a class="nav-link {{if eq $activeTab .Title}} {{print "active"}} {{end}}" aria-current="page" href="/admin/users/list?tab={{ .Title }}">{{ .Title }}</a>
+        </li>
+        {{ end }}
+    </ul>
+
+    <div class="container">
+        <form class="row g-3" action="/admin/users/remove" method="post" name="removeUsersFromGroupForm">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{range $index, $element := .payload}}
+                <tr>
+                    <th scope="row">{{ len (printf "a%*s" $index "")  }}</th>
+                    <td>{{$element}} <input type="hidden" name="group" value="{{$activeTab}}" ></td>
+                    <td> 
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="users[]" value="{{$element}}" id="flexCheckDefault{{$index}}">
+                            <label class="form-check-label" for="flexCheckDefault">
+                                Remove
+                            </label>
+                        </div>
+                    </td>
+                </tr>
+                {{end}}
+                </tbody>
+            </table>
+          
+            <p class="lead">
+                <!-- Button trigger modal -->
+                <button id="trigger-modal-add-but" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#commonConfirmationModal">Add User</button>
+                <button type="submit" class="btn btn-primary" disabled id="delete-all-button" >Delete from Group</button>
+            </p>
+        </form>
+    </div>
+</div>
+
+{{ template "footer.html" . }}
+
+<!-- Modal Add User -->
+{{ template "modal-add-user-c-group.html" dict 
+"post_url" "/admin/users/add" 
+"modal_title" "Add User to Casbin Group" 
+"modal_text_title" "Group"
+"modal_text_value" $activeTab
+"modal_list" .roles }}

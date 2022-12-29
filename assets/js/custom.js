@@ -25,3 +25,28 @@ buttons.forEach(btn => {
         document.getElementById("modal-update-label").innerHTML = v0;
     });
  });
+
+ // Page: /admin/users/list
+ // Action: checkbox enables/disables delete-all-button
+ var allCheckboxex = document.querySelectorAll(".form-check-input");
+ var ckbCounter = 0;
+
+ allCheckboxex.forEach(btn => {
+    btn.addEventListener('click', event => {
+        if (event.target.checked) {
+            ckbCounter++;
+        } else {
+            ckbCounter--;
+        }
+            if (ckbCounter>0) {
+                var deleteAllBotton = document.querySelector("button[id^=delete-all-button");
+                deleteAllBotton.disabled = false
+             } else {
+                var deleteAllBotton = document.querySelector("button[id^=delete-all-button");
+                deleteAllBotton.disabled = true
+             }
+        });
+    });
+    
+
+ 

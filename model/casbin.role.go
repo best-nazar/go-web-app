@@ -19,5 +19,5 @@ type CasbinRole struct {
 	Title  			string 		`json:"title" gorm:"index" form:"title" binding:"alphanum,min=3"`
 	CreatedAt 		time.Time  	`json:"createdAt" gorm:"autoCreateTime"`
 	IsSystem 		bool 		`json:"isSystem,omitempty" gorm:"default:false" form:"isSystem"`
-	InheritedFrom 	string		`json:"inheritedFrom" gorm:"index" form:"inheritedFrom" binding:"excludesall= "`
+	Description 	string		`json:"description" form:"description"`
 }

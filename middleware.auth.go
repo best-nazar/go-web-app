@@ -59,6 +59,12 @@ func checkCasbinRules() gin.HandlerFunc {
 		if err != nil {
 			panic(err)
 		}
+
+		// You can get acccess to the service from anywhere, by
+		// if casbinEnforcer, cExists := c.Get("casbinEnforcer"); cExists {
+		// 	casbinEnforcer = casbinEnforcer.(*casbin.Enforcer)
+		// }
+		c.Set("casbinEnforcer", casbinEnforcer)
 		
 		authz.NewAuthorizer(casbinEnforcer)(c)
 		c.Next()

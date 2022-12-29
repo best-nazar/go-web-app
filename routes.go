@@ -12,7 +12,7 @@ func initializeRoutes() {
 	// Use the setUserStatus middleware for every route to set a flag
 	// indicating whether the request was from an authenticated user or not
 	router.Use(setUserStatus())
-	// ACL or RBAC chhecks
+	// ACL or RBAC checks
 	router.Use(checkCasbinRules())
 
 	// Handle the index route
@@ -52,6 +52,10 @@ func initializeRoutes() {
 		adminRoutes.POST(("/uroles"), controller.SaveUserRoles)
 		adminRoutes.POST(("/uroles/delete"), controller.DeleteUserRoles)
 		adminRoutes.POST(("/uroles/update"), controller.UpdateUserGroups)
+		
+		adminRoutes.GET(("/users/list"), controller.ShowUsersListPage)
+		adminRoutes.POST(("/users/remove"), controller.RemoveUsersFromGroup)
+		adminRoutes.POST(("/users/add"), controller.AddUserToGroup)
 	}
 
 	// Group article related routes together

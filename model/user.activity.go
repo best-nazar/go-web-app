@@ -1,7 +1,11 @@
-//model.user.activity.go
+// model.user.activity.go
 //
 // User acvitity journal
 package model
+
+import (
+
+)
 
 type UserActivity struct {
 	ID        uint   `gorm:"primaryKey"`
@@ -9,4 +13,9 @@ type UserActivity struct {
 	Data      string `json:"data"`
 	CreatedAt int64  `json:"createdAt" gorm:"autoCreateTime"`
 	UserID    uint
+}
+
+type UsersList struct {
+    Users []string `form:"users[]" json:"users[]"`
+	Group string `form:"group" json:"group"`
 }

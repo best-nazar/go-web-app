@@ -3,14 +3,16 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"reflect"
-	"strings"
 
 	"github.com/best-nazar/web-app/errorSrc"
 	"github.com/best-nazar/web-app/model"
 	"github.com/best-nazar/web-app/repository"
+	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/exp/slices"
 )
 
 // use a single instance of Validate, it caches struct info
@@ -23,6 +25,30 @@ func ShowDashboardPage(c *gin.Context) {
 		"payload": "Dashboard"}, "admin-dashboard.html", http.StatusOK)
 }
 
+func ShowUsersListPage(c *gin.Context) {
+	var payload []string
+	role := c.Query("tab")
+
+	if role == "" {
+		role = model.GUEST_ROLE // initiate default tab
+	}
+
+	if casbinEnforcer, cExists := c.Get("casbinEnforcer"); cExists {
+		casbinEnforcer := casbinEnforcer.(*casbin.Enforcer)
+		payload, _ = casbinEnforcer.GetRoleManager().GetUsers(role, "")
+	}
+
+	Render(c, gin.H{
+		"title":     "Users and Roles",
+		"roles":     repository.ListRoles(),
+		"activeTab": role,
+		"payload":   payload,
+	},
+		"users-list.html",
+		http.StatusOK,
+	)
+}
+
 func ShowUserRolesPage(c *gin.Context) {
 	var casbins interface{}
 	var groupRoles interface{}
@@ -31,7 +57,7 @@ func ShowUserRolesPage(c *gin.Context) {
 
 	if val, ok := tabMappings[tabName]; ok {
 		switch val {
-		case "p": 
+		case "p":
 			casbins = repository.GetCasbinPolicies()
 		case "r":
 			casbins = repository.GetGroupRoles()
@@ -47,11 +73,11 @@ func ShowUserRolesPage(c *gin.Context) {
 
 	Render(c, gin.H{
 		"title":   "Users and Roles",
-		"page": "users-roles.html",
-		"tab": tabName,
+		"page":    "users-roles.html",
+		"tab":     tabName,
 		"payload": casbins,
-		"roles": groupRoles,
-		}, "admin-dashboard.html", http.StatusOK)
+		"roles":   groupRoles,
+	}, "admin-dashboard.html", http.StatusOK)
 }
 
 func SaveUserRoles(c *gin.Context) {
@@ -63,19 +89,14 @@ func SaveUserRoles(c *gin.Context) {
 		errView := errorSrc.MakeErrorView("Add role", err)
 
 		Render(c, gin.H{
-			"title": "Users and Roles",
-			"page": "users-roles.html",
-			"tab": "role",
+			"title":   "Users and Roles",
+			"page":    "users-roles.html",
+			"tab":     "role",
 			"payload": casbins,
-			"error": errView},
+			"error":   errView},
 			"admin-dashboard.html",
 			http.StatusBadRequest)
 		return
-	}
-	// If it's a UI Form request, we need convert array of string to comma separated strings
-	postFormInheritance := c.PostFormArray("inheritedFrom")
-	if len(postFormInheritance) >0 {
-		role.InheritedFrom = strings.Join(postFormInheritance, ",")
 	}
 
 	repository.SaveCasbinRole(&role)
@@ -84,35 +105,36 @@ func SaveUserRoles(c *gin.Context) {
 }
 
 func DeleteUserRoles(c *gin.Context) {
-	var role model.CasbinRole
-	role.Title="ThisRoleWillBeDeleted" //validation bypassing.
-	err := c.ShouldBind(&role)
+	var role = model.CasbinRole{}
+	casbins := repository.GetGroupRoles()
 
-	if err != nil {
-		errView := errorSrc.MakeErrorView("Delete role", err)
-		casbins := repository.GetGroupRoles()
+	c.ShouldBind(&role)
+
+	recNo, sysErr := repository.DeleteCasbinRole(&role)
+
+	if sysErr != nil {
+		errView := errorSrc.MakeErrorView("Delete role", sysErr)
 
 		Render(c, gin.H{
-			"title": "Users and Roles",
-			"page": "users-roles.html",
-			"tab": "role",
+			"title":   "Users and Roles",
+			"page":    "users-roles.html",
+			"tab":     "role",
 			"payload": casbins,
-			"error": errView},
+			"error":   errView},
 			"admin-dashboard.html",
 			http.StatusBadRequest)
 		return
 	}
 
-	recNo, _ := repository.DeleteCasbinRole(&role)
-
 	if recNo == 0 {
 		errView := errorSrc.MakeErrorViewFrom("Delete role", "ID", http.StatusNotFound)
+
 		Render(c, gin.H{
-			"title": "Users and Roles",
-			"page": "users-roles.html",
-			"tab": "role",
-			"payload": nil,
-			"error": errView},
+			"title":   "Users and Roles",
+			"page":    "users-roles.html",
+			"tab":     "role",
+			"payload": casbins,
+			"error":   errView},
 			"admin-dashboard.html",
 			http.StatusNotFound)
 		return
@@ -121,7 +143,7 @@ func DeleteUserRoles(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/admin/uroles?tab=role")
 }
 
-func UpdateUserGroups (c *gin.Context) {
+func UpdateUserGroups(c *gin.Context) {
 	var errView = errorSrc.ErrorView{}
 	var jRole = model.CasbinRole{}
 
@@ -138,11 +160,11 @@ func UpdateUserGroups (c *gin.Context) {
 
 	if !reflect.DeepEqual(errView, errorSrc.ErrorView{}) {
 		Render(c, gin.H{
-			"title": "Users and Roles",
-			"page": "users-roles.html",
-			"tab": "role",
+			"title":   "Users and Roles",
+			"page":    "users-roles.html",
+			"tab":     "role",
 			"payload": nil,
-			"error": errView},
+			"error":   errView},
 			"admin-dashboard.html",
 			http.StatusNotFound)
 		return
@@ -155,15 +177,73 @@ func UpdateUserGroups (c *gin.Context) {
 	if nErr != nil {
 		errView := errorSrc.MakeErrorViewFrom("Role", "ID", http.StatusBadRequest)
 		Render(c, gin.H{
-			"title": "Users and Roles",
-			"page": "users-roles.html",
-			"tab": "role",
+			"title":   "Users and Roles",
+			"page":    "users-roles.html",
+			"tab":     "role",
 			"payload": nil,
-			"error": errView},
+			"error":   errView},
 			"admin-dashboard.html",
 			http.StatusBadRequest)
 		return
 	}
 
 	c.Redirect(http.StatusFound, "/admin/uroles?tab=group")
+}
+
+// Action: Remove users from the casbin groups
+func RemoveUsersFromGroup(c *gin.Context) {
+	var users model.UsersList
+	c.ShouldBind(&users)
+	repository.DeleteCasbinGroup(&users)
+
+	c.Redirect(http.StatusFound, "/admin/users/list?tab=" + users.Group)
+}
+
+// Action: Add user to casbin group
+func AddUserToGroup(c *gin.Context) {
+	var user model.User
+	var userList []string
+
+	e := c.ShouldBind(&user)
+
+	if e != nil {
+		log.Println("AddUserToGroup | " + e.Error())
+	}
+
+	_, uNum := repository.GetUserByUsername(user.Username)
+	roles := repository.ListRoles()
+	idx := slices.IndexFunc(*(roles), func(c model.CasbinRole) bool { return c.Title == user.Groups })
+
+	if uNum == 0 {
+		errView := errorSrc.MakeErrorViewFrom("Value (" + user.Username + ")", "username", http.StatusNotFound)
+		Render(c, gin.H{
+			"title":     "Users and Roles",
+			"roles":     roles,
+			"activeTab": user.Groups,
+			"payload":   userList,
+			"error":   errView,
+		},
+			"users-list.html",
+			http.StatusNotFound,
+		)
+		return
+	}
+	if idx == -1 {
+		errView := errorSrc.MakeErrorViewFrom("Value (" + user.Groups + ")", "groups", http.StatusBadRequest)
+		Render(c, gin.H{
+			"title":     "Users and Roles",
+			"roles":     roles,
+			"activeTab": user.Groups,
+			"payload":   userList,
+			"error":   errView,
+		},
+			"users-list.html",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	repository.AddCasbinUserRole(user.Username, user.Groups)
+
+	c.Redirect(http.StatusFound, "/admin/users/list?tab=" + user.Groups)
 }
