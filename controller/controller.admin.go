@@ -120,8 +120,8 @@ func ShowCasbinRoutes(c *gin.Context) {
 
 	Render(c, gin.H{
 		"title":   "Casbin resources",
-		"payload": payload,
-		"groups":  roles,
+		"payload": &payload,
+		"groups":  &roles,
 		"actions": model.ACTIONS,
 	},
 		"casbins-list.html",
@@ -130,12 +130,34 @@ func ShowCasbinRoutes(c *gin.Context) {
 }
 
 func AddCasbinRoute(c *gin.Context) {
-	var cr model.CasbinRule
+	var cr model.CasbinRuleP
 
-	cr.P_type = model.GROUP_TYPE_P
-	cr.V0 = c.PostForm("group")
-	cr.V1 = c.PostForm("route")
-	cr.V2 = c.PostForm("action")
+	e := c.ShouldBind(&cr)
 
-	print("cr")
+	if e != nil {
+		c.Error(e)
+	}
+
+	repository.AddCasbinRole(&cr)
+
+	c.Redirect(http.StatusFound, "/admin/casbins/list")
+}
+
+func RemoveCasbinRoute(c *gin.Context) {
+	c.Request.ParseForm()
+	for key, values := range c.Request.PostForm {
+		if key != "ID" {
+			c.Error(errors.New("Missing ID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("Missing ID"))
+			return
+		}
+
+		err := repository.RemoveCasbinRole(values)
+
+		if err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+		}
+	}
+
+	c.Redirect(http.StatusFound, "/admin/casbins/list")
 }

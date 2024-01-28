@@ -5,6 +5,7 @@ import (
 	"github.com/best-nazar/web-app/db"
 	"github.com/best-nazar/web-app/model"
 )
+
 // table name for RBAC
 const (
 	//Policy definition
@@ -23,7 +24,7 @@ func GetCasbinPolicies() []model.CasbinRule {
 	return casbinPolicies
 }
 
-func FindCasbinRoleById (ID *uint) (*model.CasbinRule, error) {
+func FindCasbinRoleById(ID *uint) (*model.CasbinRule, error) {
 	var casbinRule model.CasbinRule
 	res := db.GetDBConnectionInstance().First(&casbinRule, ID)
 
@@ -34,8 +35,8 @@ func FindCasbinRoleById (ID *uint) (*model.CasbinRule, error) {
 func AddCasbinUserRole(username string, role string) *model.CasbinRule {
 	casbinRule := model.CasbinRule{
 		P_type: roleDefinition,
-		V0: username,
-		V1: role,
+		V0:     username,
+		V1:     role,
 	}
 
 	db.GetDBConnectionInstance().Create(&casbinRule)
@@ -43,17 +44,38 @@ func AddCasbinUserRole(username string, role string) *model.CasbinRule {
 	return &casbinRule
 }
 
+func AddCasbinRole(rule *model.CasbinRuleP) model.CasbinRuleP {
+	casbinRule := model.CasbinRule{
+		P_type: model.GROUP_TYPE_P,
+		V0:     rule.V0,
+		V1:     rule.V1,
+		V2:     rule.V2,
+		V3:     rule.V3,
+		V4:     rule.V4,
+		V5:     rule.V5,
+	}
+
+	db.GetDBConnectionInstance().Create(&casbinRule)
+
+	return model.CasbinRuleP(casbinRule)
+}
+
+func RemoveCasbinRole(ids []string) error {
+	res := db.GetDBConnectionInstance().Delete(model.CasbinRule{}, ids)
+	return res.Error
+}
+
 func CreateAdminCasbinUserRole(username string) *[]model.CasbinRule {
 	var casbinRules = []model.CasbinRule{
 		{P_type: roleDefinition,
-		V0: username,
-		V1: model.ADMIN_ROLE},
+			V0: username,
+			V1: model.ADMIN_ROLE},
 		{P_type: roleDefinition,
-		V0: username,
-		V1: model.USER_ROLE},
+			V0: username,
+			V1: model.USER_ROLE},
 		{P_type: roleDefinition,
-		V0: username,
-		V1: model.GUEST_ROLE},
+			V0: username,
+			V1: model.GUEST_ROLE},
 	}
 
 	db.GetDBConnectionInstance().Create(&casbinRules)
