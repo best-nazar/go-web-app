@@ -8,10 +8,15 @@
 {{ $activeTab := .activeTab }}
 
 <div class="container">
+    {{ template "page-title.html" dict 
+        "title" .title 
+        "description" "Add/remove user by username to the Group" 
+    }}
+    
     <ul class="nav nav-pills">
         {{range .roles }}
         <li class="nav-item">
-          <a class="nav-link {{if eq $activeTab .Title}} {{print "active"}} {{end}}" aria-current="page" href="/admin/users/list?tab={{ .Title }}">{{ .Title }}</a>
+        <a class="nav-link {{if eq $activeTab .Title}} {{print "active"}} {{end}}" aria-current="page" href="/admin/users/list?tab={{ .Title }}">{{ .Title }}</a>
         </li>
         {{ end }}
     </ul>
@@ -43,7 +48,7 @@
                 {{end}}
                 </tbody>
             </table>
-          
+        
             <p class="lead">
                 <!-- Button trigger modal -->
                 <button id="trigger-modal-add-but" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#commonConfirmationModal">Add User</button>

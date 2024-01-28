@@ -34,7 +34,7 @@ Note: Make sure there is no double slashed in URL like: //u/login (must be /u/lo
 		"title": "Users and Roles",
 		"payload": casbins,
 		"admin-dashboard.html",
-		http.StatusOk)
+		http.StatusOk})
 ```
 2. Error handling:
 2.1. Add the binding to the Model:

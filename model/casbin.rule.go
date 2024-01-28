@@ -6,6 +6,8 @@ const (
 	GROUP_TYPE_P = "p"
 )
 
+var ACTIONS = []string{"*", "GET", "POST"}
+
 type CasbinRule struct {
 	ID      uint    `gorm:"primaryKey"`
 	P_type	string	`json:"p-type" gorm:"index"`

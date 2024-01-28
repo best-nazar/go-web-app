@@ -1,6 +1,6 @@
 // middleware.auth_test.go
 
-package main
+package middleware
 
 import (
 	"net/http"
@@ -13,7 +13,7 @@ import (
 // Test the setUserStatus middleware when the user is logged in
 func TestSetUserStatusAuthenticated(t *testing.T) {
 	r := getRouter(false)
-	r.GET("/", setUserStatus(), func(c *gin.Context) {
+	r.GET("/", SetUserStatus(), func(c *gin.Context) {
 		// as the token cookie was set, the "is_logged_in" should have been set
 		// to true by the setUserStatus middleware
 		loggedInInterface, exists := c.Get("is_logged_in")
@@ -39,7 +39,7 @@ func TestSetUserStatusAuthenticated(t *testing.T) {
 // Test the setUserStatus middleware when the user is not logged in
 func TestSetUserStatusUnauthenticated(t *testing.T) {
 	r := getRouter(false)
-	r.GET("/", setUserStatus(), func(c *gin.Context) {
+	r.GET("/", SetUserStatus(), func(c *gin.Context) {
 		// as the token cookie was not set, the "is_logged_in" should have been set
 		// to false by the setUserStatus middleware
 		loggedInInterface, exists := c.Get("is_logged_in")
@@ -64,4 +64,13 @@ func setLoggedIn(b bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("is_logged_in", b)
 	}
+}
+// Helper function to create a router during testing
+func getRouter(withTemplates bool) *gin.Engine {
+	r := gin.Default()
+	if withTemplates {
+		r.LoadHTMLGlob("templates/*")
+		r.Use(SetUserStatus())
+	}
+	return r
 }

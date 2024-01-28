@@ -1,7 +1,6 @@
-package main
+package middleware
 
 import (
-	"io/ioutil"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +9,7 @@ import (
 )
 
 // Sets configuration to the gin.c
-func setConfiguration() gin.HandlerFunc {
+func SetConfiguration() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		conf := model.Config{}
 		data := loadYamlFile()
@@ -27,7 +26,7 @@ func setConfiguration() gin.HandlerFunc {
 // Load the configuration from YAML
 func loadYamlFile() []byte {
 	path := getPath()
-	data, err := ioutil.ReadFile(path + "/config/config.yaml")
+	data, err := os.ReadFile(path + "/config/config.yaml")
 
 	if err != nil {
 		panic(err)

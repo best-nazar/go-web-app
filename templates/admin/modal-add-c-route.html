@@ -1,0 +1,59 @@
+<!--
+    Common Confirmation modal window
+    Action: ADD ROUTE TO CASBIN GROUP
+
+    Example:
+    { { template "modal-add-c-route.html" dict 
+    "post_url" "?go-to" 
+    "modal_title" "Add Route to Group" 
+    "groups" .list
+    "actions" .list } }
+
+    dict required vars:
+        .post_url       string
+        .modal_title    string
+        .groups         string[]
+        .actions        string[]
+-->
+<div class="modal fade" id="commonConfirmationModal" tabindex="-1" aria-labelledby="commonConfirmationLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="row g-3" action="{{ .post_url }}" method="post" name="commonConfirmationUpdForm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="commonConfirmationLabel">{{ .modal_title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Route:</span>
+                    <input type="text" class="form-control" placeholder="/route/like/this" aria-label="Route" name="route" aria-describedby="basic-addon1">
+                    </div>
+                    <div class="input-group mb-2">
+                        <div class="dropdown">                    
+                            <select class="btn btn-secondary dropdown-toggle" name="group" aria-describedby="basic-addon2">
+                                <option selected disabled>Select Group</option>
+                                {{range .groups}}
+                                    <option class="dropdown-item" value="{{ .Title }}" >{{ .Title }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group mb-2">
+                        <div class="dropdown">                    
+                            <select class="btn btn-secondary dropdown-toggle" name="action" aria-describedby="basic-addon2">
+                                <option selected disabled>Select Action</option>
+                                {{range .actions}}
+                                    <option class="dropdown-item" value="{{ . }}" >{{ . }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-primary">Yes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

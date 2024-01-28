@@ -1,6 +1,6 @@
 // middleware.auth.go
 
-package main
+package middleware
 
 import (
 	sqladapter "github.com/best-nazar/web-app/db"
@@ -13,7 +13,7 @@ import (
 )
 
 // This middleware sets whether the user is logged in or not
-func setUserStatus() gin.HandlerFunc {
+func SetUserStatus() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if token, err := c.Cookie("token"); err == nil || token != "" {
 			auth, _ := c.Cookie("auth")
@@ -45,7 +45,7 @@ func setUserStatus() gin.HandlerFunc {
 	}
 }
 
-func checkCasbinRules() gin.HandlerFunc {
+func CheckCasbinRules() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Initialize an adapter and use it in a Casbin enforcer:
 		// the default table name is "casbin_rule".

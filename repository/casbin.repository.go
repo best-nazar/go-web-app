@@ -23,14 +23,6 @@ func GetCasbinPolicies() []model.CasbinRule {
 	return casbinPolicies
 }
 
-func GetCasbinRoles() []model.CasbinRule {
-	var casbinRoles []model.CasbinRule
-
-	db.GetDBConnectionInstance().Find(&casbinRoles, "p_type=?", roleDefinition)
-
-	return casbinRoles
-}
-
 func FindCasbinRoleById (ID *uint) (*model.CasbinRule, error) {
 	var casbinRule model.CasbinRule
 	res := db.GetDBConnectionInstance().First(&casbinRule, ID)

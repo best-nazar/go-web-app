@@ -19,13 +19,12 @@
     <!--Embed the menu.html template at this location-->
     {{ template "menu.html" . }}
 
-    <!--If there's an error, display the error-->
-    {{ if .error }}
+    <!--If there are "errors", display the error-->
+    {{ if .errors }}
       <div class="container">  
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
-          <strong>{{ .error.Title }}:</strong> 
-          {{ range $message := .error.Messages }}
-          <div class="clearfix">{{ $message }}</div>
+          {{ range $error_custom := .errors }}
+          <div class="clearfix">{{ $error_custom.Error }}</div>
           {{ end }}
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>     

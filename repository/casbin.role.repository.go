@@ -16,15 +16,6 @@ func ListRoles() *[]model.CasbinRole {
 	return &groupRoles
 }
 
-// TODO - Delete this
-func GetGroupRoles() []model.CasbinRole {
-	var groupRoles = []model.CasbinRole{}
-
-	db.GetDBConnectionInstance().Find(&groupRoles)
-
-	return groupRoles
-}
-
 func SaveCasbinRole(casbinRole *model.CasbinRole) model.CasbinRole {
 	db.GetDBConnectionInstance().Create(&casbinRole)
 

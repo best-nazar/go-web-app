@@ -4,18 +4,14 @@
 {{ template "header.html" .}}
 
 <div class="container">
-  {{ if not .page}}
     <div class="card">
         <div class="card-body">
           <h5 class="card-title">{{ .title }}</h5>
           <h6 class="card-subtitle mb-2 text-muted">{{ .payload }}</h6>
           <p class="card-text">Manage Users and Groups.</p>
-          <a href="/admin/uroles" class="card-link">Users & Groups</a>
+          <a href="/admin/users/list" class="card-link">Users & Groups</a>
         </div>
     </div>
-  {{else}}
-    {{ template "users-roles.html" .}}
-  {{end}} 
 </div>
 
 <!--Embed the footer.html template at this location-->
