@@ -23,7 +23,7 @@ func ShowDashboardPage(c *gin.Context) {
 		"payload": "Dashboard"}, "admin-dashboard.html", http.StatusOK)
 }
 
-func ShowUsersListPage(c *gin.Context) {
+func ShowGroupsListPage(c *gin.Context) {
 	var payload []string
 	role := c.Query("tab")
 
@@ -37,26 +37,26 @@ func ShowUsersListPage(c *gin.Context) {
 	}
 
 	Render(c, gin.H{
-		"title":     "Manage Roles",
+		"title":     "Manage Groups",
 		"roles":     repository.ListRoles(),
 		"activeTab": role,
 		"payload":   payload,
 	},
-		"users-list.html",
+		"groups-list.html",
 		http.StatusOK,
 	)
 }
 
 // Action: Remove users from the casbin groups
-func RemoveUsersFromGroup(c *gin.Context) {
+func RemoveUserFromGroup(c *gin.Context) {
 	var users model.UsersList
 	e := c.ShouldBind(&users)
 
 	if e == nil {
 		repository.DeleteCasbinGroup(&users)
-		c.Redirect(http.StatusOK, "/admin/users/list?tab="+users.Group)
+		c.Redirect(http.StatusFound, "/admin/groups/list?tab="+users.Group)
 	} else {
-		c.Redirect(http.StatusFound, "/admin/users/list?tab="+users.Group)
+		c.Redirect(http.StatusNotModified, "/admin/groups/list?tab="+users.Group)
 	}
 }
 
@@ -73,7 +73,7 @@ func AddUserToGroup(c *gin.Context) {
 
 	_, uNum := repository.GetUserByUsername(user.Username)
 	roles := repository.ListRoles()
-	idx := slices.IndexFunc(*(roles), func(c model.CasbinRole) bool { return c.Title == user.Groups })
+	idx := slices.IndexFunc(*(roles), func(c model.CasbinRole) bool { return c.Title == user.Flag })
 
 	if uNum == 0 {
 		er := errors.New("(" + user.Username + ") not found")
@@ -81,37 +81,55 @@ func AddUserToGroup(c *gin.Context) {
 
 		Render(c, gin.H{
 			"title":     "Manage Roles",
-			"roles":     &roles,
-			"activeTab": user.Groups,
-			"payload":   &userList,
+			"roles":     roles,
+			"activeTab": user.Flag,
+			"payload":   userList,
 			"errors":    c.Errors,
 		},
-			"users-list.html",
+			"groups-list.html",
 			http.StatusNotFound,
 		)
 		return
 	}
 
 	if idx == -1 {
-		er := errors.New("Incorrect value (" + user.Groups + ")")
+		er := errors.New("Incorrect value (" + user.Flag + ")")
 		c.Error(er)
 
 		Render(c, gin.H{
 			"title":     "Manage Roles",
-			"roles":     &roles,
-			"activeTab": user.Groups,
-			"payload":   &userList,
+			"roles":     roles,
+			"activeTab": user.Flag,
+			"payload":   userList,
 			"errors":    c.Errors,
 		},
-			"users-list.html",
+			"groups-list.html",
 			http.StatusBadRequest,
 		)
 		return
 	}
 
-	repository.AddCasbinUserRole(user.Username, user.Groups)
+	_, count := repository.FindCasbinGroupByNameAndRole(user.Username, user.Flag)
 
-	c.Redirect(http.StatusFound, "/admin/users/list?tab="+user.Groups)
+	if count == 0 {
+		repository.AddCasbinUserRole(user.Username, user.Flag)
+	} else {
+		c.Error(errors.New("Username {" + user.Username + "} & Group {" + user.Flag + "} setting already exist"))
+
+		Render(c, gin.H{
+			"title":     "Manage Roles",
+			"roles":     roles,
+			"activeTab": user.Flag,
+			"payload":   userList,
+			"errors":    c.Errors,
+		},
+			"groups-list.html",
+			http.StatusConflict,
+		)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/admin/groups/list?tab="+user.Flag)
 }
 
 func ShowCasbinRoutes(c *gin.Context) {
@@ -120,8 +138,8 @@ func ShowCasbinRoutes(c *gin.Context) {
 
 	Render(c, gin.H{
 		"title":   "Casbin resources",
-		"payload": &payload,
-		"groups":  &roles,
+		"payload": payload,
+		"groups":  roles,
 		"actions": model.ACTIONS,
 	},
 		"casbins-list.html",

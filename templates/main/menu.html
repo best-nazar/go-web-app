@@ -26,8 +26,8 @@
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="/admin/dashboard">Dashboard</a></li>
-            <li><a class="dropdown-item" href="/admin/users/list">Manage Groups</a></li>
-            <li><a class="dropdown-item" href="/admin/casbins/list">Resources</a></li>
+            <li><a class="dropdown-item" href="/admin/groups/list">Manage Groups</a></li>
+            <li><a class="dropdown-item" href="/admin/casbins/list">Manage URL Resources</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="#">Something else here</a></li>
           </ul>
@@ -47,8 +47,8 @@
         </li>
         
       </ul>
-      <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+      <form class="d-flex" name="mainSearchForm" id="mainSearchForm">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="mainSearchInput">
         <button class="btn btn-outline-success" type="submit">Search</button>
       </form>
     </div>

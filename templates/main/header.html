@@ -23,9 +23,11 @@
     {{ if .errors }}
       <div class="container">  
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
-          {{ range $error_custom := .errors }}
-          <div class="clearfix">{{ $error_custom.Error }}</div>
-          {{ end }}
+          <div class="grid">
+            {{ range $error_custom := .errors }}
+              <div class="row">{{ $error_custom.Error }}</div>
+            {{ end }}
+          </div>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>     
       </div>

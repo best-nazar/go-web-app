@@ -31,6 +31,16 @@ func FindCasbinRoleById(ID *uint) (*model.CasbinRule, error) {
 	return &casbinRule, res.Error
 }
 
+func FindCasbinGroupByNameAndRole(username string, role string) (*[]model.CasbinRule, int64) {
+	var casbinPolicies []model.CasbinRule
+	var count int64
+
+	res := db.GetDBConnectionInstance().Where("V0=? AND V1=?", username, role).Find(&casbinPolicies)
+	res.Count(&count)
+
+	return &casbinPolicies, count
+}
+
 // Adds the binding of Casbin Role to the Username
 func AddCasbinUserRole(username string, role string) *model.CasbinRule {
 	casbinRule := model.CasbinRule{

@@ -16,13 +16,13 @@
     <ul class="nav nav-pills">
         {{range .roles }}
         <li class="nav-item">
-        <a class="nav-link {{if eq $activeTab .Title}} {{print "active"}} {{end}}" aria-current="page" href="/admin/users/list?tab={{ .Title }}">{{ .Title }}</a>
+        <a class="nav-link {{if eq $activeTab .Title}} {{print "active"}} {{end}}" aria-current="page" href="/admin/groups/list?tab={{ .Title }}">{{ .Title }}</a>
         </li>
         {{ end }}
     </ul>
 
     <div class="container">
-        <form class="row g-3" action="/admin/users/remove" method="post" name="removeUsersFromGroupForm">
+        <form class="row g-3" action="/admin/groups/remove" method="post" name="removeUsersFromGroupForm">
             <table class="table table-striped">
                 <thead>
                 <tr>
@@ -38,9 +38,9 @@
                     <td>{{$element}} <input type="hidden" name="group" value="{{$activeTab}}" ></td>
                     <td> 
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="users[]" value="{{$element}}" id="flexCheckDefault{{$index}}">
-                            <label class="form-check-label" for="flexCheckDefault">
+                            <label class="form-check-label">
                                 Remove
+                                <input class="form-check-input" type="checkbox" name="users[]" value="{{$element}}" id="flexCheckDefault{{$index}}">
                             </label>
                         </div>
                     </td>
@@ -62,7 +62,7 @@
 
 <!-- Modal Add User -->
 {{ template "modal-add-user-c-group.html" dict 
-"post_url" "/admin/users/add" 
+"post_url" "/admin/groups/add" 
 "modal_title" "Add User to Casbin Group" 
 "modal_text_title" "Group"
 "modal_text_value" $activeTab

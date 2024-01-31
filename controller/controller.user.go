@@ -65,27 +65,41 @@ func ShowRegistrationPage(c *gin.Context) {
 }
 
 func Register(c *gin.Context) {
-	username := c.PostForm("username")
+	var user model.User
 
-	if c.PostForm("password") != c.PostForm("password_repeat") {
+	e:= c.ShouldBind(&user)
+
+	if e!=nil {
+		c.Error(e)
+	}
+
+	if user.Password != c.PostForm("password_repeat") {
 		er := errors.New("Provided passwords do not match")
 		c.Error(er)
+	}
+
+	if length := len(c.Errors); length > 0 {
 		Render(c, gin.H{"errors": c.Errors}, "register.html", http.StatusBadRequest)
 		return
 	}
 
-	name := c.PostForm("name")
 	birthday := helpers.StringToTimestamp(c.PostForm("birthday"))
 	config, exist := c.Get("config")
-	role := config.(model.Config)
+	conf := config.(model.Config)
 
-	if !exist {
+	if !exist || conf.DefaultCasbinGroup == "" {
 		panic("The Key 'default-casbin-group' is not found in config.yaml")
+	}
+
+	if helpers.Contains(strings.Split(conf.UsernameRestrictedWords,","), user.Username) {
+		c.Error(errors.New("The username (" + user.Username + ") isn't available"))
+		Render(c, gin.H{"errors": c.Errors}, "register.html", http.StatusBadRequest)
+		return
 	}
 
 	password := security.ComputeHmac256(c.PostForm("password"))
 
-	if u, err := registerNewUser(name, username, password, role.DefaultCasbinGroup, birthday); err == nil {
+	if u, err := registerNewUser(&user, password, birthday, conf.DefaultCasbinGroup); err == nil {
 		// If the user is created, set the token in a cookie and log the user in
 		saveAuthToken(c, u)
 
@@ -102,24 +116,19 @@ func Register(c *gin.Context) {
 }
 
 // Register a new user with the given username and password
-func registerNewUser(name, username, password, role string, birthday int64) (*model.User, error) {
+func registerNewUser(user *model.User, password string, birthday int64, role string) (*model.User, error) {
 	if strings.TrimSpace(password) == "" {
 		return nil, errors.New("the password can't be empty")
-	} else if _, r := repository.GetUserByUsername(username); r > 0 {
+	} else if _, r := repository.GetUserByUsername(user.Username); r > 0 {
 		return nil, errors.New("the username isn't available")
 	}
+	user.Password = password
+	user.Birthday = sql.NullInt64{Int64: birthday, Valid: true}
 
-	user := model.User{
-		Name:     name,
-		Birthday: sql.NullInt64{Int64: birthday, Valid: true},
-		Username: username,
-		Password: password,
-	}
+	repository.AddNewUser(user)
+	repository.AddCasbinUserRole(user.Username, role)
 
-	repository.AddNewUser(&user)
-	repository.AddCasbinUserRole(username, role)
-
-	return &user, nil
+	return user, nil
 }
 
 // Save Auth data and token for UI

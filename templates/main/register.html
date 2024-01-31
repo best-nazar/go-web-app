@@ -9,27 +9,31 @@
     <div class="panel panel-default">
       <div class="panel-body">
         <!--Create a form that POSTs to the `/u/register` route-->
-        <form class="form" action="/u/register" method="POST">
+        <form class="form" action="/u/register" method="POST" name="registerForm">
           <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" class="form-control" id="name" name="name" placeholder="Name">
+            <label for="full_name">Full Name</label>
+            <input type="text" class="form-control" id="full_name" name="full_name" placeholder="Full Name" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="email" required >
           </div>
           <div class="form-group">
             <label for="username">Username</label>
-            <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+            <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
           </div>
           <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" name="password" class="form-control" id="password" placeholder="Password">
+            <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
           </div>
           <div class="form-group">
             <label for="password_repeat">Password</label>
-            <input type="password" name="password_repeat" class="form-control" id="password_repeat" placeholder="Repeat Password">
+            <input type="password" name="password_repeat" class="form-control" id="password_repeat" placeholder="Repeat Password" required>
           </div>
           <div class="form-group">
-            <label for="birhday">Birthday</label>
+            <label for="birthday">Birthday</label>
             <div class="input-group date" data-provide="datepicker">
-              <input type="text" class="form-control" name="birthday" >
+              <input type="text" class="form-control" name="birthday" id="birthday" required value="01-01-2000">
               <div class="input-group-addon">
                   <span class="glyphicon glyphicon-th"></span>
               </div>

@@ -8,12 +8,19 @@ This is the code from the article [Building Go Web Applications and Microservice
 3. Auth configuration: authz_model.conf & authz_policy.csv
 4. In Casbin, an access control model is abstracted into a CONF file based on the PERM metamodel (Policy, Effect, Request, Matchers) https://github.com/casbin/casbin
 
-5. Adding the policy rule:
-- Run query: ```INSERT INTO casbin_rule (p_type, v0, v1, v2) VALUES ('p, guest, /article/view/*, GET);```
-- Restart the App to reload rules.
-6. Adding the group:
-- Run query: ```INSERT INTO casbin_rule (p_type, v0, v1) VALUES ('g', 'test1', 'guest');```
+5. Adding the policy rule: see automigratioon in 'dbconnection.go'
 - Restart the App to reload rules. More examples at ``__authz_policy.csv``
+6. Groups hierarchy
+- guest
+- - member
+- - - admin
+
+6.1. Admin user
+6.2. To register a User with admin rights, change the configuration in config.yaml to the next 
+```
+default-casbin-group: admin
+```
+Then hit the '/u/register' URL and fill in the form. Then return the configuration in config.yaml to 'member'.
 
 7. API:
 Authorization - Basic
@@ -33,7 +40,7 @@ Note: Make sure there is no double slashed in URL like: //u/login (must be /u/lo
 	Render(c, gin.H{
 		"title": "Users and Roles",
 		"payload": casbins,
-		"admin-dashboard.html",
+		"page-name.html",
 		http.StatusOk})
 ```
 2. Error handling:
@@ -45,32 +52,28 @@ type CasbinRole struct {
 	InheritedFrom 	string		`json:"inheritedFrom" gorm:"index" form:"inheritedFrom" binding:"excludesall= "`
 }
 ```
-2.2. Check the errorMsgHandl.go, Make sure the binding tag is in switch/case.
-2.3. In controlller:
-2.3.1 Validate the request:
-```
-if err != nil {
-	casbins := repository.GetGroupRoles()
-	errView := errorSrc.MakeErrorView("Add role", err)
 
-	err := []string{err.Error()}
-	errView := errorSrc.MakeErrorView("Add role", err)
-		Render(c, gin.H{
-			"payload": data,
-			"error": errView},
-			"template.html",
-			http.StatusBadRequest)
-}			
-```
-Note: 
-3. Groups hierarchy
-- guest
-- - member
-- - - admin
 
-4. User Activity Data
+8. User Activity Data collecting
 Keeps the history of actions like: page opened, data added/updated/deleted
-Turn on/off in config.yaml
+Turn on/off in config.yaml and check DB table 'user_activities'
 ```
 user-activity-logging: true
+```
+
+9. DB Migration
+5.1 Automigration: see "dbconnection.go"
+Condition - if no tables created then auto run migration. In other words, drop all tables in schema, run the server, and hit any endpoint.
+
+10. APP configuration
+10.1. Add the propoerty to config.yaml
+10.2. Add the property to the Struct 'model.Config'
+10.3. Read the config
+```
+	config, exist := c.Get("config")
+	role := config.(model.Config)
+
+	if !model.Config.DefaultCasbinGroup {
+		panic("The Key 'default-casbin-group' is not found in config.yaml")
+	}
 ```

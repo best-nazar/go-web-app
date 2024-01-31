@@ -50,9 +50,9 @@ func initializeRoutes() {
 	{
 		adminRoutes.GET("/dashboard", controller.ShowDashboardPage)
 		
-		adminRoutes.GET("/users/list", controller.ShowUsersListPage)
-		adminRoutes.POST("/users/remove", controller.RemoveUsersFromGroup)
-		adminRoutes.POST("/users/add", controller.AddUserToGroup)
+		adminRoutes.GET("/groups/list", controller.ShowGroupsListPage)
+		adminRoutes.POST("/groups/remove", controller.RemoveUserFromGroup)
+		adminRoutes.POST("/groups/add", controller.AddUserToGroup)
 
 		adminRoutes.GET("/casbins/list", controller.ShowCasbinRoutes)
 		adminRoutes.POST("/casbins/add", controller.AddCasbinRoute)

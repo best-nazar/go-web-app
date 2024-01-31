@@ -3,3 +3,5 @@
 default-casbin-group: admin
 # Turn on/off user activity logging to the DB
 user-activity-logging: false
+#restricted words for registration as a 'username'. No spaces allowed.
+username-restricted-words: admin,member,guest,user

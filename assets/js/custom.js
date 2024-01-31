@@ -26,7 +26,7 @@ buttons.forEach(btn => {
     });
  });
 
- // Page: /admin/users/list
+ // Page: /admin/groups/list
  // Action: checkbox enables/disables delete-all-button
  var allCheckboxex = document.querySelectorAll(".form-check-input");
  var ckbCounter = 0;
