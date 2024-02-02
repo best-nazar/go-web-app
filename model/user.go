@@ -18,7 +18,6 @@ type User struct {
 	Active      sql.NullInt16 `json:"active"`
 	Username    string        `json:"username" form:"username" gorm:"index" binding:"required,alphanum"`
 	Password    string        `json:"-" form:"password" binding:"required"`
-	Flag        string
 }
 
 // Checks if the password is valid

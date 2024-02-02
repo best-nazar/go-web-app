@@ -4,7 +4,10 @@ package controller
 
 import (
 	"net/http"
+	"net/url"
+	"strings"
 
+	"github.com/best-nazar/web-app/helpers"
 	"github.com/best-nazar/web-app/model"
 	"github.com/best-nazar/web-app/repository"
 	"github.com/casbin/casbin/v2"
@@ -12,9 +15,6 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/exp/slices"
 )
-
-// use a single instance of Validate, it caches struct info
-//var validate *validator.Validate
 
 func ShowDashboardPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
@@ -31,10 +31,8 @@ func ShowGroupsListPage(c *gin.Context) {
 		role = model.GUEST_ROLE // initiate default tab
 	}
 
-	if casbinEnforcer, cExists := c.Get("casbinEnforcer"); cExists {
-		casbinEnforcer := casbinEnforcer.(*casbin.Enforcer)
-		payload, _ = casbinEnforcer.GetRoleManager().GetUsers(role, "")
-	}
+	casbinEnforcer := c.MustGet("casbinEnforcer").(*casbin.Enforcer)
+	payload, _ = casbinEnforcer.GetRoleManager().GetUsers(role, "")
 
 	Render(c, gin.H{
 		"title":     "Manage Groups",
@@ -62,74 +60,46 @@ func RemoveUserFromGroup(c *gin.Context) {
 
 // Action: Add user to casbin group
 func AddUserToGroup(c *gin.Context) {
-	var user model.User
-	var userList []string
+	var ug model.UserGroup
 
-	e := c.ShouldBind(&user)
+	e := c.ShouldBind(&ug)
 
 	if e != nil {
 		c.Error(e)
 	}
 
-	_, uNum := repository.GetUserByUsername(user.Username)
-	roles := repository.ListRoles()
-	idx := slices.IndexFunc(*(roles), func(c model.CasbinRole) bool { return c.Title == user.Flag })
+	validateRoles(c, ug.Group)
+
+	_, uNum := repository.GetUserByUsername(ug.Username)
 
 	if uNum == 0 {
-		er := errors.New("(" + user.Username + ") not found")
+		er := errors.New("username|" + ug.Username + " not found")
 		c.Error(er)
-
-		Render(c, gin.H{
-			"title":     "Manage Roles",
-			"roles":     roles,
-			"activeTab": user.Flag,
-			"payload":   userList,
-			"errors":    c.Errors,
-		},
-			"groups-list.html",
-			http.StatusNotFound,
-		)
-		return
+	}
+	
+	if _, count := repository.FindCasbinGroupByNameAndRole(ug.Username, ug.Group); count != 0 {
+		c.Error(errors.New("username|" + ug.Username + " in Group " + ug.Group + " already exist"))
 	}
 
-	if idx == -1 {
-		er := errors.New("Incorrect value (" + user.Flag + ")")
-		c.Error(er)
+	if len(c.Errors) > 0 {
+		casbinEnforcer := c.MustGet("casbinEnforcer").(*casbin.Enforcer)
+		payload, _ := casbinEnforcer.GetRoleManager().GetUsers(ug.Group, "")
+		roles := repository.ListRoles()
 
 		Render(c, gin.H{
 			"title":     "Manage Roles",
 			"roles":     roles,
-			"activeTab": user.Flag,
-			"payload":   userList,
-			"errors":    c.Errors,
-		},
-			"groups-list.html",
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	_, count := repository.FindCasbinGroupByNameAndRole(user.Username, user.Flag)
-
-	if count == 0 {
-		repository.AddCasbinUserRole(user.Username, user.Flag)
-	} else {
-		c.Error(errors.New("Username {" + user.Username + "} & Group {" + user.Flag + "} setting already exist"))
-
-		Render(c, gin.H{
-			"title":     "Manage Roles",
-			"roles":     roles,
-			"activeTab": user.Flag,
-			"payload":   userList,
-			"errors":    c.Errors,
+			"activeTab": ug.Group,
+			"payload":   payload,
+			"errors":    helpers.Errors(c),
 		},
 			"groups-list.html",
 			http.StatusConflict,
 		)
-		return
+	} else {
+		repository.AddCasbinUserRole(ug.Username, ug.Group)
+		c.Redirect(http.StatusFound, "/admin/groups/list?tab=" + ug.Group)
 	}
-
-	c.Redirect(http.StatusFound, "/admin/groups/list?tab="+user.Flag)
 }
 
 func ShowCasbinRoutes(c *gin.Context) {
@@ -137,10 +107,11 @@ func ShowCasbinRoutes(c *gin.Context) {
 	roles := repository.ListRoles()
 
 	Render(c, gin.H{
-		"title":   "Casbin resources",
+		"title":   "Manage URL resources",
 		"payload": payload,
 		"groups":  roles,
 		"actions": model.ACTIONS,
+		"errors":  helpers.Errors(c),
 	},
 		"casbins-list.html",
 		http.StatusOK,
@@ -156,9 +127,31 @@ func AddCasbinRoute(c *gin.Context) {
 		c.Error(e)
 	}
 
-	repository.AddCasbinRole(&cr)
+	u, err := url.ParseRequestURI(cr.V1)
 
-	c.Redirect(http.StatusFound, "/admin/casbins/list")
+	if err == nil {
+		cr.V1 = u.Path
+		_, ferr := repository.FindCasbinUrlGroup(&cr)
+
+		if ferr == nil {
+			c.Error(errors.New("rules|" + cr.V1 + " " + cr.V0 + " " + cr.V2 + " exists"))
+		}
+	} else {
+		c.Error(errors.New("route|must be valid URL string"))
+	}
+
+	validateRoles(c, cr.V0)
+
+	if idx := slices.Index(model.ACTIONS, cr.V2); idx == -1 {
+		c.Error(errors.New("action|" + cr.V2 + " is not allowed. Allowed values:" + strings.Join(model.ACTIONS, ", ")))
+	}
+
+	if len(c.Errors)>0 {
+		ShowCasbinRoutes(c)
+	} else {
+		repository.AddCasbinRole(&cr)
+		c.Redirect(http.StatusFound, "/admin/casbins/list")
+	}
 }
 
 func RemoveCasbinRoute(c *gin.Context) {
@@ -178,4 +171,14 @@ func RemoveCasbinRoute(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusFound, "/admin/casbins/list")
+}
+
+func validateRoles(c *gin.Context, group string) {
+	roles := repository.ListRoles()
+	idx := slices.IndexFunc(*(roles), func(c model.CasbinRole) bool { return c.Title == group })
+
+	if idx == -1 {
+		er := errors.New("group|" + group + " not found")
+		c.Error(er)
+	}
 }

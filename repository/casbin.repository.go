@@ -24,6 +24,13 @@ func GetCasbinPolicies() []model.CasbinRule {
 	return casbinPolicies
 }
 
+func FindCasbinUrlGroup(cr *model.CasbinRuleP) (*model.CasbinRule, error) {
+	var casbinRule model.CasbinRule
+	res := db.GetDBConnectionInstance().First(&casbinRule, cr)
+
+	return &casbinRule, res.Error
+}
+
 func FindCasbinRoleById(ID *uint) (*model.CasbinRule, error) {
 	var casbinRule model.CasbinRule
 	res := db.GetDBConnectionInstance().First(&casbinRule, ID)

@@ -3,6 +3,8 @@ package helpers
 import (
 	"log"
 	"time"
+	"unicode"
+
 	"github.com/golang-module/carbon/v2"
 )
 
@@ -32,3 +34,9 @@ func StringToTimestamp (datetime string) int64 {
 func TimestampToSting (timestamp int64) string {
 	return carbon.CreateFromTimestamp(timestamp).ToFormatString(dateFormat)
 }
+
+func Capitalize(str string) string {
+	runes := []rune(str)
+	runes[0] = unicode.ToUpper(runes[0])
+	return string(runes)
+  }

@@ -41,9 +41,8 @@ func PerformLogin(c *gin.Context) {
 	} else {
 		// If the username/password combination is invalid,
 		// show the error message on the login page
-		er := errors.New("Invalid credentials provided")
-		c.Error(er)
-		Render(c, gin.H{"errors": c.Errors}, "login.html", http.StatusBadRequest)
+		c.Error(errors.New("User credentials|Invalid credentials provided"))
+		Render(c, gin.H{"errors": helpers.Errors(c)}, "login.html", http.StatusBadRequest)
 	}
 }
 
@@ -74,26 +73,21 @@ func Register(c *gin.Context) {
 	}
 
 	if user.Password != c.PostForm("password_repeat") {
-		er := errors.New("Provided passwords do not match")
+		er := errors.New("credentials|provided password does not match")
 		c.Error(er)
 	}
 
 	if length := len(c.Errors); length > 0 {
-		Render(c, gin.H{"errors": c.Errors}, "register.html", http.StatusBadRequest)
+		Render(c, gin.H{"errors": helpers.Errors(c)}, "register.html", http.StatusBadRequest)
 		return
 	}
 
 	birthday := helpers.StringToTimestamp(c.PostForm("birthday"))
-	config, exist := c.Get("config")
-	conf := config.(model.Config)
-
-	if !exist || conf.DefaultCasbinGroup == "" {
-		panic("The Key 'default-casbin-group' is not found in config.yaml")
-	}
+	conf := c.MustGet("config").(model.Config)
 
 	if helpers.Contains(strings.Split(conf.UsernameRestrictedWords,","), user.Username) {
-		c.Error(errors.New("The username (" + user.Username + ") isn't available"))
-		Render(c, gin.H{"errors": c.Errors}, "register.html", http.StatusBadRequest)
+		c.Error(errors.New("username|" + user.Username + " isn't available"))
+		Render(c, gin.H{"errors": helpers.Errors(c)}, "register.html", http.StatusBadRequest)
 		return
 	}
 
@@ -111,16 +105,16 @@ func Register(c *gin.Context) {
 		// If the username/password combination is invalid,
 		// show the error message on the Register page
 		c.Error(err)
-		Render(c, gin.H{"errors": c.Errors}, "register.html", http.StatusBadRequest)
+		Render(c, gin.H{"errors": helpers.Errors(c)}, "register.html", http.StatusBadRequest)
 	}
 }
 
 // Register a new user with the given username and password
 func registerNewUser(user *model.User, password string, birthday int64, role string) (*model.User, error) {
 	if strings.TrimSpace(password) == "" {
-		return nil, errors.New("the password can't be empty")
+		return nil, errors.New("password| can't be empty")
 	} else if _, r := repository.GetUserByUsername(user.Username); r > 0 {
-		return nil, errors.New("the username isn't available")
+		return nil, errors.New("username| " + user.Username + " isn't available")
 	}
 	user.Password = password
 	user.Birthday = sql.NullInt64{Int64: birthday, Valid: true}

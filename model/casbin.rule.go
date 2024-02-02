@@ -33,9 +33,9 @@ type CasbinRuleG struct {
 type CasbinRuleP struct {
 	ID     uint   `gorm:"primaryKey"`
 	P_type string `default:"p" json:"p-type" gorm:"index"`
-	V0     string `json:"group" form:"group" gorm:"index"`
-	V1     string `json:"route" form:"route" gorm:"index"`
-	V2     string `json:"action" form:"action"`
+	V0     string `json:"group" form:"group" gorm:"index" binding:"required"`
+	V1     string `json:"route" form:"route" gorm:"index" binding:"required"`
+	V2     string `json:"action" form:"action" binding:"required"`
 	V3     string `json:"v3"`
 	V4     string `json:"v4"`
 	V5     string `json:"v5"`
