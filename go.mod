@@ -12,7 +12,7 @@ require (
 	gorm.io/gorm v1.24.7-0.20230306060331-85eaf9eeda11
 )
 
-require github.com/go-playground/validator/v10 v10.14.0 // indirect
+require github.com/go-playground/validator/v10 v10.14.0
 
 require (
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect

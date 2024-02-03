@@ -25,3 +25,14 @@ func AddNewUser(user *model.User) *model.User {
 
 	return user
 }
+
+func GetUsers() []*model.User {
+	var users []*model.User
+	result := db.GetDBConnectionInstance().Find(&users)
+
+	if result.Error!=nil {
+		log.Fatal(result.Error)
+	}
+
+	return users
+}

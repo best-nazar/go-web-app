@@ -41,7 +41,7 @@ func PerformLogin(c *gin.Context) {
 	} else {
 		// If the username/password combination is invalid,
 		// show the error message on the login page
-		c.Error(errors.New("User credentials|Invalid credentials provided"))
+		c.Error(errors.New("user credentials|Invalid credentials provided"))
 		Render(c, gin.H{"errors": helpers.Errors(c)}, "login.html", http.StatusBadRequest)
 	}
 }

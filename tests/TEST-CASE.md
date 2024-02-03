@@ -3,7 +3,7 @@
 ### Feature: User as a guest on the Website
 #### Scenarion: User registration
         Given: I am the new user and I'd like to register myself on the web-site. 
-                I hit `http://localhost:8080/u/register` or chose `register` button in main menu
+                I hit `/u/register` or chose `register` button in main menu
                 I see thh Registratioon form for: `Full Name`, `Email address`, `Username`, `Password`, `Birthday`
         When    I enter valida dataa
         Then    I am redirected to the Member's Workspace
@@ -14,7 +14,7 @@
 
 #### Scenario: User Login
         Given: I have correct username and password
-        When    I hit URL `http://localhost:8080/u/login` and enter `username` and `password` to the form
+        When    I hit URL `/u/login` and enter `username` and `password` to the form
         Then    I should get redirected to the `Dashboard` page
 
         Given: I have username that doesn't matches the alphanum constraints
@@ -24,7 +24,7 @@
     
 #### Scenario: User Logout
         Given: As a looged user, I'd like to logout
-        When    I hit `logout` in the main menu, or hit the URL `http://localhost:8080/u/logout`
+        When    I hit `logout` in the main menu, or hit the URL `/u/logout`
         Then    I will be reddirected to guest home page and all cockies will be cleared.
 
 ### Feature: User as Administrator (admin)
@@ -65,3 +65,7 @@
         Given: As the Admin User I want to delete the URL resource from access group list
         When    I check the row checkbox and hit Delete Routes button
         Then    Route(s) is(are) deleted and the list is refreshed
+#### Scenarion: User admin Manage Users list
+        Given: As Admin User I'd like to the list of all users registered in system
+        When    I go to Admin Menu / Users link or URL `/admin/users/list`
+        Then    I see the list of all Users so that I can sort data in colunms.

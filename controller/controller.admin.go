@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/best-nazar/web-app/helpers"
 	"github.com/best-nazar/web-app/model"
@@ -159,7 +160,7 @@ func RemoveCasbinRoute(c *gin.Context) {
 	for key, values := range c.Request.PostForm {
 		if key != "ID" {
 			c.Error(errors.New("Missing ID"))
-			c.AbortWithError(http.StatusBadRequest, errors.New("Missing ID"))
+			c.AbortWithError(http.StatusBadRequest, c.Errors.Last())
 			return
 		}
 
@@ -173,6 +174,18 @@ func RemoveCasbinRoute(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/admin/casbins/list")
 }
 
+func UsersList(c *gin.Context) {
+	Render(c, gin.H{
+		"title":   "Manage Users",
+		"payload": repository.GetUsers(),
+		"errors":  helpers.Errors(c),
+		"formatDate": formatDate, //helpers.TimestampToSting,
+	},
+		"users-list.html",
+		http.StatusOK,
+	)
+}
+
 func validateRoles(c *gin.Context, group string) {
 	roles := repository.ListRoles()
 	idx := slices.IndexFunc(*(roles), func(c model.CasbinRole) bool { return c.Title == group })
@@ -181,4 +194,8 @@ func validateRoles(c *gin.Context, group string) {
 		er := errors.New("group|" + group + " not found")
 		c.Error(er)
 	}
+}
+
+func formatDate(timestamp int64) string {
+	return time.Unix(timestamp, 0).Format("2006-01-02 15:04:05")
 }

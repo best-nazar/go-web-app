@@ -1,0 +1,92 @@
+{{ template "header.html" . }}
+
+<div class="container">
+    {{ template "page-title.html" dict 
+        "title" .title 
+        "description" "The list of users registered" 
+    }}
+    <div class="container mt-1">
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th class="sortable active-sort" data-sort="number">#</th>
+                <th class="sortable inactive-sort" data-sort="fullname">Full Name</th>
+                <th class="sortable inactive-sort" data-sort="fullname">Email</th>
+                <th class="sortable inactive-sort" data-sort="username">Username</th>
+                <th class="sortable inactive-sort" data-sort="birthday">Birthday</th>
+                <th class="sortable inactive-sort" data-sort="active">Active</th>
+                <th class="sortable inactive-sort" data-sort="created">Created</th>
+                <th class="inactive-sort">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+                {{ range $idx, $user := .payload }}
+                    <tr>
+                        <td>{{ len (printf "a%*s" $idx "") }}</td>
+                        <td>{{ $user.Name }}</td>
+                        <td>{{ $user.Email }}</td>
+                        <td>{{ $user.Username }}</td>
+                        <td>{{ formatDate $user.Birthday.Int64 }}</td>
+                        <td>{{ if (eq $user.Active.Int16 1) }} Yes {{ else }} No {{ end }}</td>
+                        <td>{{ formatDate $user.CreatedAt }}</td>
+                        <td><button class="btn btn-primary">Edit</button></td>
+                    </tr>
+                {{ end }}
+            </tbody>
+          </table>
+        </div>
+    </div>
+
+</div>
+
+{{ template "footer.html" . }}
+
+<script>
+    // JavaScript for sorting functionality
+    document.addEventListener('DOMContentLoaded', function () {
+      let table = document.querySelector('.table');
+      let headers = table.querySelectorAll('th.sortable');
+  
+      headers.forEach(header => {
+        header.addEventListener('click', function () {
+          let sortOrder = this.classList.contains('sorted-asc') ? -1 : 1;
+  
+          headers.forEach(h => {
+            h.classList.remove('inactive-sort', 'sorted-asc', 'sorted-desc', 'active-sort');
+          });
+  
+          if (sortOrder === 1) {
+            this.classList.add('sorted-asc', 'active-sort');
+          } else {
+            this.classList.add('sorted-desc', 'active-sort');
+          }
+  
+          let index = Array.prototype.indexOf.call(headers, this);
+          sortTable(table, index, sortOrder);
+        });
+      });
+  
+      function sortTable(table, column, sortOrder) {
+        let rows = Array.from(table.rows).slice(1); // Exclude the header row
+        let sortedRows = rows.sort((a, b) => {
+          let aValue = a.cells[column].textContent.trim();
+          let bValue = b.cells[column].textContent.trim();
+  
+          if (!isNaN(aValue) && !isNaN(bValue)) {
+            // If the values are numeric, compare as numbers
+            return (aValue - bValue) * sortOrder;
+          } else {
+            // If the values are not numeric, compare as strings
+            return aValue.localeCompare(bValue) * sortOrder;
+          }
+        });
+  
+        // Clear the existing rows from the table
+        table.querySelector('tbody').innerHTML = '';
+  
+        // Append the sorted rows to the table
+        sortedRows.forEach(row => table.querySelector('tbody').appendChild(row));
+      }
+    });
+  </script>

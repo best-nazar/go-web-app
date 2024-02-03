@@ -6,6 +6,7 @@ import (
 	"errors"
 	"html/template"
 
+	"github.com/best-nazar/web-app/helpers"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +26,7 @@ func main() {
 	// from the disk again. This makes serving HTML pages very fast.
 	router.SetFuncMap(template.FuncMap{
         "dict": templateDict,
+		"formatDate": helpers.TimestampToSting,
     })
 
 	router.LoadHTMLGlob("templates/*/*.html")
