@@ -72,8 +72,18 @@
 
         Given:  As Admin User I want to see User Details information
         When    I hit 'Details' link in Action column on the row
-        Then    I can see all details and additional action buttons: Edit, Suspend, Back
+        Then    I can see all details and additional action buttons: Edit, Activate/Deactivate, Back
 
         Given: As Admin User I want to see User Details information
         When    I send a wrong user ID number in URL `/admin/user/details/XX`
         Then    I see the Not found error message
+
+        Given: As Admin User I'd like to Edit User properties (email, birthday)
+        When    I hit Edit buton
+        Then    change the information in the modal window, and save it.
+
+        Given: As Admin User, I update User details 
+        When    with empty or wrong data format
+        Then    I see an error.
+
+        

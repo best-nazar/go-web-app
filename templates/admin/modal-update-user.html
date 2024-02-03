@@ -1,0 +1,67 @@
+<!--
+    User Edit modal window
+
+    Example:
+    { { template "modal-update-user.html" dict "post_url" "?go-to" "modal_title" "Edit User" "user" .payload } }
+
+    required vars:
+        .post_url
+        .modal_title
+        .user
+
+-->
+<div class="modal fade" id="commonConfirmationModal" tabindex="-1" aria-labelledby="commonConfirmationLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="row g-3" action="{{ .post_url }}" method="post" name="commonConfirmationForm" autocomplete="off">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ .modal_title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <label class="col-form-label" id="modal-label">{{ .user.Name }}</label>
+                        <input type="hidden" value="{{ .user.ID }}" name="ID" id="ID">
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="span-addon0">Name:</span>
+                        <input type="text" class="form-control" aria-label="full_name" name="full_name" aria-describedby="span-addon0" value="{{ .user.Name }}">
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="span-addon1">Email:</span>
+                        <input type="text" class="form-control" placeholder="some@com.com" aria-label="Email" name="email" aria-describedby="span-addon1" value="{{ .user.Email }}">
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group date" data-provide="datepicker">
+                            <span class="input-group-text" id="span-addon3">Birthday:</span>
+                            <input type="text" class="form-control" aria-describedby="span-addon3" value="{{ formatDate .user.Birthday.Int64 }}" name="birthday">
+                            <div class="input-group-addon">
+                                <i class="fa fa-calendar-check-o fa-2x fa-fw" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-primary">Yes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/locales/bootstrap-datepicker.en-GB.min.js" charset="UTF-8"></script>
+
+<script type="text/javascript">
+    // https://bootstrap-datepicker.readthedocs.io/en/latest/markup.html
+    $(".date").datepicker({
+      format: "dd-mm-yyyy",
+      todayHighlight: true,
+      defaultViewDate: '-18y',
+    });
+</script>

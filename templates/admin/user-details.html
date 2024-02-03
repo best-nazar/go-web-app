@@ -18,7 +18,7 @@
                   <table class="table table-bordered table-striped">
                     <thead>
                       <tr scope="col">
-                        <th>Propertyy</th><th>Summary</th>
+                        <th>Property</th><th>Summary</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -42,12 +42,25 @@
                 </div>
             </div>
             <div class="card-footer">
-              <a class="btn btn-primary me-2" type="button">Edit</a>
-              <a class="btn btn-warning me-2" type="button">Suspend</a>
-              <a href="/admin/users/list" class="btn btn-dark" type="button">Back</a>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button id="trigger-modal-add-but" type="button" class="btn btn-outline-primary me-md-2btn-outline-primary me-md-2" data-bs-toggle="modal" data-bs-target="#commonConfirmationModal">Edit</button>
+                    {{ if (eq .payloa.Active.Int16 1) }}
+                        <a class="btn btn-outline-warning me-md-2" type="button">Deactivate</a>
+                    {{ else }}
+                        <a class="btn btn-outline-success me-md-2" type="button">Activate</a>
+                    {{ end }}
+                    <a href="/admin/users/list" class="btn btn-outline-dark" type="button">Back</a>
+                </div>
             </div>
           </div>
     </div>
 </div>
 
 {{ template "footer.html" . }}
+
+<!-- Modal -->
+{{ template "modal-update-user.html" dict 
+"post_url" "/admin/user/update" 
+"modal_title" "Update User" 
+"user" .payload
+}}

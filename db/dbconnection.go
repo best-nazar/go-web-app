@@ -38,10 +38,10 @@ func GetDBConnectionInstance() *gorm.DB {
 
 			singleInstance = db
 		} else {
-			log.Println("Single instance already created.")
+			log.Println("Single instance already created 1.")
 		}
 	} else {
-		log.Println("Single instance already created.")
+		log.Println("Single instance already created 2.")
 	}
 
 	return singleInstance

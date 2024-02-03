@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/best-nazar/web-app/helpers"
 	"github.com/best-nazar/web-app/model"
@@ -213,6 +212,20 @@ func UserDetails(c *gin.Context) {
 	}
 }
 
+func UserUpdate(c *gin.Context) {
+	var user *model.UpdateUser
+
+	err := c.ShouldBind(&user)
+
+	if err == nil {
+		repository.UpdateUser(user)
+		UsersList(c)
+	} else {
+		c.Error(err)
+		UsersList(c)
+	}
+}
+
 func validateRoles(c *gin.Context, group string) {
 	roles := repository.ListRoles()
 	idx := slices.IndexFunc(*(roles), func(c model.CasbinRole) bool { return c.Title == group })
@@ -221,8 +234,4 @@ func validateRoles(c *gin.Context, group string) {
 		er := errors.New("group|" + group + " not found")
 		c.Error(er)
 	}
-}
-
-func formatDate(timestamp int64) string {
-	return time.Unix(timestamp, 0).Format("2006-01-02 15:04:05")
 }

@@ -1,10 +1,13 @@
 package repository
 
 import (
+	"database/sql"
 	"log"
 
 	"github.com/best-nazar/web-app/db"
+	"github.com/best-nazar/web-app/helpers"
 	"github.com/best-nazar/web-app/model"
+	"gorm.io/gorm"
 )
 
 // Gets User by the username
@@ -46,4 +49,31 @@ func FindUserById(id string) (*model.User, int64) {
 	}
 
 	return user, result.RowsAffected
+}
+
+func UpdateUser(user *model.UpdateUser) (*model.User, int64) {
+	var result *gorm.DB
+	
+	lookupUser := model.User{
+		ID: user.ID,
+	}
+	
+	findResult := db.GetDBConnectionInstance().First(&lookupUser)
+	
+	if findResult.Error!=nil {
+		log.Fatal(findResult.Error)
+	}
+
+	if findResult.RowsAffected > 0 {
+		birthday := helpers.StringToTimestamp(user.Birthday)
+
+		result = db.GetDBConnectionInstance().Model(&lookupUser).Updates(model.User{
+			Name: user.Name,
+			Email: user.Email,
+			Birthday: sql.NullInt64{Int64: birthday, Valid: true},
+			Active: user.Active,
+		})
+	}
+
+	return &lookupUser, result.RowsAffected
 }

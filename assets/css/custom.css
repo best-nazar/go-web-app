@@ -27,3 +27,7 @@ th.active-sort {
 th.inactive-sort {
     color: #1d2022; /* Gray color for inactive sort */
 }
+
+.datepicker {
+    margin-left: 50px;
+}
