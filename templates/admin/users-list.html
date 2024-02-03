@@ -12,7 +12,7 @@
               <tr>
                 <th class="sortable active-sort" data-sort="number">#</th>
                 <th class="sortable inactive-sort" data-sort="fullname">Full Name</th>
-                <th class="sortable inactive-sort" data-sort="fullname">Email</th>
+                <th class="sortable inactive-sort" data-sort="email">Email</th>
                 <th class="sortable inactive-sort" data-sort="username">Username</th>
                 <th class="sortable inactive-sort" data-sort="birthday">Birthday</th>
                 <th class="sortable inactive-sort" data-sort="active">Active</th>
@@ -30,14 +30,13 @@
                         <td>{{ formatDate $user.Birthday.Int64 }}</td>
                         <td>{{ if (eq $user.Active.Int16 1) }} Yes {{ else }} No {{ end }}</td>
                         <td>{{ formatDate $user.CreatedAt }}</td>
-                        <td><button class="btn btn-primary">Edit</button></td>
+                        <td><a href="/admin/user/details/{{ $user.ID }}" class="link-primary">Details</a></td>
                     </tr>
                 {{ end }}
             </tbody>
           </table>
         </div>
     </div>
-
 </div>
 
 {{ template "footer.html" . }}

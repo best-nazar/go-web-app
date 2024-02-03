@@ -59,6 +59,7 @@ func initializeRoutes() {
 		adminRoutes.POST("/casbins/remove", controller.RemoveCasbinRoute)
 
 		adminRoutes.GET("/users/list", controller.UsersList)
+		adminRoutes.GET("/user/details/:id", controller.UserDetails)
 	}
 
 	// Group article related routes together

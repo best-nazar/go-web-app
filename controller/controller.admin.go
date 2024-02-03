@@ -77,7 +77,7 @@ func AddUserToGroup(c *gin.Context) {
 		er := errors.New("username|" + ug.Username + " not found")
 		c.Error(er)
 	}
-	
+
 	if _, count := repository.FindCasbinGroupByNameAndRole(ug.Username, ug.Group); count != 0 {
 		c.Error(errors.New("username|" + ug.Username + " in Group " + ug.Group + " already exist"))
 	}
@@ -99,7 +99,7 @@ func AddUserToGroup(c *gin.Context) {
 		)
 	} else {
 		repository.AddCasbinUserRole(ug.Username, ug.Group)
-		c.Redirect(http.StatusFound, "/admin/groups/list?tab=" + ug.Group)
+		c.Redirect(http.StatusFound, "/admin/groups/list?tab="+ug.Group)
 	}
 }
 
@@ -147,7 +147,7 @@ func AddCasbinRoute(c *gin.Context) {
 		c.Error(errors.New("action|" + cr.V2 + " is not allowed. Allowed values:" + strings.Join(model.ACTIONS, ", ")))
 	}
 
-	if len(c.Errors)>0 {
+	if len(c.Errors) > 0 {
 		ShowCasbinRoutes(c)
 	} else {
 		repository.AddCasbinRole(&cr)
@@ -175,15 +175,42 @@ func RemoveCasbinRoute(c *gin.Context) {
 }
 
 func UsersList(c *gin.Context) {
+	statusCode := http.StatusOK
+
+	if len(c.Errors)>0 {
+		statusCode = http.StatusBadRequest
+	}
+
 	Render(c, gin.H{
-		"title":   "Manage Users",
+		"title":   "Registered Users",
 		"payload": repository.GetUsers(),
 		"errors":  helpers.Errors(c),
-		"formatDate": formatDate, //helpers.TimestampToSting,
 	},
 		"users-list.html",
-		http.StatusOK,
+		statusCode,
 	)
+}
+
+func UserDetails(c *gin.Context) {
+	id := c.Param("id")
+
+	user, nRows := repository.FindUserById(id)
+
+	if nRows > 0 {
+		Render(c, gin.H{
+			"title":       "User Details",
+			"description": user.Name,
+			"payload":     user,
+			"errors":      helpers.Errors(c),
+		},
+			"user-details.html",
+			http.StatusOK,
+		)
+	} else {
+		c.Error(errors.New("user|ID:" + id + " not found"))
+
+		UsersList(c)
+	}
 }
 
 func validateRoles(c *gin.Context, group string) {

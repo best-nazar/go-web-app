@@ -20,6 +20,7 @@ func main() {
 	router = gin.Default()
 	// Loading static assets like JS & CSS
 	router.Static("/assets", "./assets")
+	router.Static("/images", "./images")
 	router.StaticFile("/favicon.ico", "./assets/favicon.ico")
 
 	// Process the templates at the start so that they don't have to be loaded

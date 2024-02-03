@@ -36,3 +36,14 @@ func GetUsers() []*model.User {
 
 	return users
 }
+
+func FindUserById(id string) (*model.User, int64) {
+	var user *model.User
+	result := db.GetDBConnectionInstance().Find(&user, id)
+
+	if result.Error!=nil {
+		log.Fatal(result.Error)
+	}
+
+	return user, result.RowsAffected
+}

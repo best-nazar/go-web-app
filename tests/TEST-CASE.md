@@ -69,3 +69,11 @@
         Given: As Admin User I'd like to the list of all users registered in system
         When    I go to Admin Menu / Users link or URL `/admin/users/list`
         Then    I see the list of all Users so that I can sort data in colunms.
+
+        Given:  As Admin User I want to see User Details information
+        When    I hit 'Details' link in Action column on the row
+        Then    I can see all details and additional action buttons: Edit, Suspend, Back
+
+        Given: As Admin User I want to see User Details information
+        When    I send a wrong user ID number in URL `/admin/user/details/XX`
+        Then    I see the Not found error message
