@@ -27,8 +27,8 @@
                         <td>{{ $user.Name }}</td>
                         <td>{{ $user.Email }}</td>
                         <td>{{ $user.Username }}</td>
-                        <td>{{ formatDate $user.Birthday.Int64 }}</td>
-                        <td>{{ if (eq $user.Active.Int16 1) }} Yes {{ else }} No {{ end }}</td>
+                        <td>{{ $user.Birthday }}</td>
+                        <td>{{ if (eq $user.Active 1) }} Yes {{ else }} No {{ end }}</td>
                         <td>{{ formatDate $user.CreatedAt }}</td>
                         <td><a href="/admin/user/details/{{ $user.ID }}" class="link-primary">Details</a></td>
                     </tr>

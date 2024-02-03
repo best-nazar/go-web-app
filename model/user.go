@@ -2,20 +2,16 @@
 
 package model
 
-import (
-	"database/sql"
-)
-
 type User struct {
 	ID          uint          `gorm:"primaryKey" json:"id"`
 	Name        string        `json:"fullName" form:"full_name" binding:"required"`
 	Email       string        `json:"email" form:"email" gorm:"index" binding:"required,email"`
-	Birthday    sql.NullInt64 `json:"birthday"`
+	Birthday    string 			`json:"birthday" form:"birthday" binding:"required"`
 	Token       string        `gorm:"index"`
 	CreatedAt   int64         `json:"createdAt" gorm:"autoCreateTime"`
 	UpdatedAt   int64         `json:"updatedAt" gorm:"autoUpdateTime"`
 	SuspendedAt int64         `json:"suspenedAt" form:"suspended_at"`
-	Active      sql.NullInt16 `json:"active" form:"active"`
+	Active      int16 			`json:"active" form:"active"`
 	Username    string        `json:"username" form:"username" gorm:"index" binding:"required,alphanum"`
 	Password    string        `json:"-" form:"password" binding:"required"`
 }
@@ -28,7 +24,7 @@ type UpdateUser struct {
 	Token       string        `gorm:"-"`
 	UpdatedAt   int64         `json:"updatedAt" gorm:"autoUpdateTime, -"`
 	SuspendedAt int64         `json:"suspenedAt" form:"suspended_at" gorm:"-"`
-	Active      sql.NullInt16 `json:"active" form:"active" gorm:"-"`
+	Active      int16 			`json:"active" form:"active" gorm:"-"`
 }
 
 // Checks if the password is valid

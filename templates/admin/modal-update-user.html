@@ -34,7 +34,7 @@
                     <div class="input-group mb-3">
                         <div class="input-group date" data-provide="datepicker">
                             <span class="input-group-text" id="span-addon3">Birthday:</span>
-                            <input type="text" class="form-control" aria-describedby="span-addon3" value="{{ formatDate .user.Birthday.Int64 }}" name="birthday">
+                            <input type="text" class="form-control" aria-describedby="span-addon3" value="{{ .user.Birthday }}" name="birthday">
                             <div class="input-group-addon">
                                 <i class="fa fa-calendar-check-o fa-2x fa-fw" aria-hidden="true"></i>
                             </div>

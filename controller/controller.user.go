@@ -3,7 +3,6 @@
 package controller
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 	"strconv"
@@ -82,7 +81,6 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	birthday := helpers.StringToTimestamp(c.PostForm("birthday"))
 	conf := c.MustGet("config").(model.Config)
 
 	if helpers.Contains(strings.Split(conf.UsernameRestrictedWords,","), user.Username) {
@@ -93,7 +91,7 @@ func Register(c *gin.Context) {
 
 	password := security.ComputeHmac256(c.PostForm("password"))
 
-	if u, err := registerNewUser(&user, password, birthday, conf.DefaultCasbinGroup); err == nil {
+	if u, err := registerNewUser(&user, password, conf.DefaultCasbinGroup); err == nil {
 		// If the user is created, set the token in a cookie and log the user in
 		saveAuthToken(c, u)
 
@@ -110,15 +108,13 @@ func Register(c *gin.Context) {
 }
 
 // Register a new user with the given username and password
-func registerNewUser(user *model.User, password string, birthday int64, role string) (*model.User, error) {
+func registerNewUser(user *model.User, password string, role string) (*model.User, error) {
 	if strings.TrimSpace(password) == "" {
 		return nil, errors.New("password| can't be empty")
 	} else if _, r := repository.GetUserByUsername(user.Username); r > 0 {
 		return nil, errors.New("username| " + user.Username + " isn't available")
 	}
 	user.Password = password
-	user.Birthday = sql.NullInt64{Int64: birthday, Valid: true}
-
 	repository.AddNewUser(user)
 	repository.AddCasbinUserRole(user.Username, role)
 

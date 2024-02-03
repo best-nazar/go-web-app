@@ -23,10 +23,10 @@
                     </thead>
                     <tbody>
                         <tr scope="row">
-                            <td>Birthday</td><td>{{ formatDate .payload.Birthday.Int64 }}</td>
+                            <td>Birthday</td><td>{{ .payload.Birthday }}</td>
                         </tr>
                         <tr scope="row">
-                            <td>Is active</td><td>{{ if (eq .payloa.Active.Int16 1) }} Yes {{ else }} No {{ end }}</td>
+                            <td>Is active</td><td>{{ if (eq .payloa.Active 1) }} Yes {{ else }} No {{ end }}</td>
                         </tr>
                         <tr scope="row">
                             <td>Created at</td><td>{{ formatDate .payload.CreatedAt }}</td>
@@ -35,7 +35,7 @@
                             <td>Update at</td><td>{{ formatDate .payload.UpdatedAt}}</td>
                         </tr>
                         <tr scope="row">
-                            <td>Suspended at</td><td>{{ formatDate .payload.SuspendedAt }}</td>
+                            <td>Suspended at</td><td>{{ if (eq .payload.SuspendedAt 0) }} - {{ else }} {{ formatDate .payload.SuspendedAt }} {{ end }}</td>
                         </tr>
                     </tbody>
                   </table>
@@ -44,7 +44,7 @@
             <div class="card-footer">
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <button id="trigger-modal-add-but" type="button" class="btn btn-outline-primary me-md-2btn-outline-primary me-md-2" data-bs-toggle="modal" data-bs-target="#commonConfirmationModal">Edit</button>
-                    {{ if (eq .payloa.Active.Int16 1) }}
+                    {{ if (eq .payloa.Active 1) }}
                         <a class="btn btn-outline-warning me-md-2" type="button">Deactivate</a>
                     {{ else }}
                         <a class="btn btn-outline-success me-md-2" type="button">Activate</a>
