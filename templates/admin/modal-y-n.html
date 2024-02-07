@@ -1,23 +1,22 @@
 <!--
     Common Confirmation modal window
-    Action DELETE
 
     Example:
-    { { template "modal-delete.html" dict "post_url" "?go-to" "modal_title" "Delete Role" "modal_text_value" "some value" "modal_text_ID" "123" } }
+    { { template "modal-y-n.html" dict "post_url" "?go-to" "modal_title" "Delete Role" "modal_description" "some value" "modal_target_ID" "123" } }
 
     required vars:
         .post_url
         .modal_title
-        .modal_text_value
-        .modal_text_ID
+        .modal_description
+        .modal_target_ID
     controls id: ID
-    controls value: modal-delete-value
-    controls label: modal-delete-label
+    controls value: modal-y-n-value
+    controls label: modal-y-n-label
 
 -->
-<div class="modal fade" id="commonConfirmationModal" tabindex="-1" aria-labelledby="commonConfirmationLabel" aria-hidden="true">
+<div class="modal fade" id="yesNoModal" tabindex="-1" aria-labelledby="commonConfirmationLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <form class="row g-3" action="{{ .post_url }}" method="post" name="commonConfirmationRoleForm">
+        <form class="row g-3" action="{{ .post_url }}" method="post" name="commonConfirmationForm">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="commonConfirmationLabel">{{ .modal_title }}</h5>
@@ -25,9 +24,9 @@
                 </div>
                 <div class="modal-body">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="modal-delete-label">ID</span>
-                        <input type="text" class="form-control" id="modal-delete-value" aria-label="Please confirm" value="{{ .modal_text_value }}" aria-describedby="modal-delete-label" disabled>
-                        <input type="hidden" value="{{ .modal_text_ID }}" name="ID" id="ID">
+                        <span class="input-group-text" id="modal-y-n-label">Target</span>
+                        <input type="text" class="form-control" id="modal-y-n-value" aria-label="Please confirm" value="{{ .modal_description }}" aria-describedby="modal-y-n-label" disabled>
+                        <input type="hidden" value="{{ .modal_target_ID }}" name="ID" id="ID">
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -1,16 +1,16 @@
-// Get value from buttinon and set it to the modal-delete.html dialog form
-// Make sure the buttons have id Example: <button id="trigger-modal-delete{{.ID}}" type="button"> 
-var buttons = document.querySelectorAll("button[id^=trigger-modal-delete]");
+// Get value from buttinon and set it to the modal-yes-no.html dialog form
+// Make sure the buttons have id Example: <button id="trigger-modal-y-n{{.ID}}" type="button"> 
+// var buttons = document.querySelectorAll("button[id^=trigger-modal-y-n]");
 
-buttons.forEach(btn => {
-    btn.addEventListener('click', event => {
-        var values = event.target.value.split(";")// "ID;Text"
+// buttons.forEach(btn => {
+//     btn.addEventListener('click', event => {
+//         var values = event.target.value.split(";")// "ID;Text"
 
-        document.getElementById("ID").value = values[0];
-        document.getElementById("modal-delete-label").innerHTML = values[0];
-        document.getElementById("modal-delete-value").value = values[1];
-    });
- });
+//         document.getElementById("ID").value = values[0];
+//         document.getElementById("modal-y-n-label").innerHTML = values[0];
+//         document.getElementById("modal-y-n-value").value = values[1];
+//     });
+//  });
 
 // For Modal Update
  var editButtons = document.querySelectorAll("button[id^=trigger-modal-update]");

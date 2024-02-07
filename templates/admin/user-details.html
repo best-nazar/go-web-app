@@ -1,10 +1,16 @@
 {{ template "header.html" . }}
-
+{{ $action := "" }}
 <div class="container">
     {{ template "page-title.html" dict 
         "title" .title 
         "description" .description
     }}
+    {{ if (eq .payload.Active 1) }}
+        {{ $action = "Deactivate"}}
+    {{ else }}
+        {{ $action = "Activate" }}
+    {{ end }}
+
     <div class="container mt-1">
         <div class="card">
             <div class="card-body text-center">
@@ -23,10 +29,16 @@
                     </thead>
                     <tbody>
                         <tr scope="row">
-                            <td>Birthday</td><td>{{ .payload.Birthday }}</td>
+                            <td>ID</td><td>{{ .payload.ID }}</td>
                         </tr>
                         <tr scope="row">
-                            <td>Is active</td><td>{{ if (eq .payloa.Active 1) }} Yes {{ else }} No {{ end }}</td>
+                            <td>Full name</td><td>{{ .payload.Name }}</td>
+                        </tr>
+                        <tr scope="row">
+                            <td>Status Active</td><td>{{ if (eq .payload.Active 1) }} Yes {{ else }} No {{ end }}</td>
+                        </tr>
+                        <tr scope="row">
+                            <td>Birthday</td><td>{{ .payload.Birthday }}</td>
                         </tr>
                         <tr scope="row">
                             <td>Created at</td><td>{{ formatDate .payload.CreatedAt }}</td>
@@ -37,6 +49,9 @@
                         <tr scope="row">
                             <td>Suspended at</td><td>{{ if (eq .payload.SuspendedAt 0) }} - {{ else }} {{ formatDate .payload.SuspendedAt }} {{ end }}</td>
                         </tr>
+                        <tr scope="row">
+                            <td>Groups</td><td>{{ .groups }}</td>
+                        </tr>
                     </tbody>
                   </table>
                 </div>
@@ -44,11 +59,7 @@
             <div class="card-footer">
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <button id="trigger-modal-add-but" type="button" class="btn btn-outline-primary me-md-2btn-outline-primary me-md-2" data-bs-toggle="modal" data-bs-target="#commonConfirmationModal">Edit</button>
-                    {{ if (eq .payloa.Active 1) }}
-                        <a class="btn btn-outline-warning me-md-2" type="button">Deactivate</a>
-                    {{ else }}
-                        <a class="btn btn-outline-success me-md-2" type="button">Activate</a>
-                    {{ end }}
+                    <button class="btn btn-outline-success me-md-2" type="button" data-bs-toggle="modal" data-bs-target="#yesNoModal">{{ $action }}</button>
                     <a href="/admin/users/list" class="btn btn-outline-dark" type="button">Back</a>
                 </div>
             </div>
@@ -64,3 +75,9 @@
 "modal_title" "Update User" 
 "user" .payload
 }}
+
+{{ template "modal-y-n.html" dict 
+"post_url" "/admin/user/update/status" 
+"modal_title" $action 
+"modal_description" .payload.Username 
+"modal_target_ID" .payload.ID }}

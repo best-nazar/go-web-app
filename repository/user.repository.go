@@ -73,3 +73,25 @@ func UpdateUser(user *model.UpdateUser) (*model.User, int64) {
 
 	return &lookupUser, result.RowsAffected
 }
+
+// active value 0 | 1. Field can be updated only via interface{}
+func DeactivateUser(user *model.UpdateUser) (int64, error) {
+	var result *gorm.DB
+
+	lookupUser := model.User{
+		ID: user.ID,
+	}
+	
+	findResult := db.GetDBConnectionInstance().First(&lookupUser)
+	
+	if findResult.Error!=nil {
+		log.Fatal(findResult.Error)
+	}
+
+	if findResult.RowsAffected > 0 {
+		result = db.GetDBConnectionInstance().Model(&lookupUser).Updates(map[string]interface{}{
+			"active" : 0,
+		})
+	}
+	return result.RowsAffected, findResult.Error
+}

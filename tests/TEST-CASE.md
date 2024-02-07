@@ -1,7 +1,7 @@
 ## TEST CASES (GWT)
 
 ### Feature: User as a guest on the Website
-#### Scenarion: User registration
+#### Scenario: User registration
         Given: I am the new user and I'd like to register myself on the web-site. 
                 I hit `/u/register` or chose `register` button in main menu
                 I see thh Registratioon form for: `Full Name`, `Email address`, `Username`, `Password`, `Birthday`
@@ -28,7 +28,7 @@
         Then    I will be reddirected to guest home page and all cockies will be cleared.
 
 ### Feature: User as Administrator (admin)
-#### Scenarion: User admin Manage Groups
+#### Scenario: User admin Manage Groups
         Given: Admin adds user to one of guest, member, admin Groups
         When    Hits 'Add User' button and provides existing username
         Then    see the added user in selected group list
@@ -49,7 +49,7 @@
         When    checks the User in the list and hits the button 'Delete from a Group'
         Then    reloaded page show updated Groups table
 
-#### Scenarion: User admin Manage URL resources
+#### Scenario: User admin Manage URL resources
         Given: As a User with admin role I'd like to assign access group to the URL
         When    I go to URL:`/admin/casbins/list` or choose Manager URL Resources in Admin Menu
         Then    I can see the list of URLs and the group they are assigned to
@@ -65,7 +65,7 @@
         Given: As the Admin User I want to delete the URL resource from access group list
         When    I check the row checkbox and hit Delete Routes button
         Then    Route(s) is(are) deleted and the list is refreshed
-#### Scenarion: User admin Manage Users list
+#### Scenario: User admin Manage Users list
         Given: As Admin User I'd like to the list of all users registered in system
         When    I go to Admin Menu / Users link or URL `/admin/users/list`
         Then    I see the list of all Users so that I can sort data in colunms.
@@ -86,4 +86,16 @@
         When    with empty or wrong data format
         Then    I see an error.
 
-        
+        Given: As Admin User I want to activate/deactivate user
+        When    hit the acctivate/deactivate button on user details page
+        Then    Confirmation for appears to save the change.
+
+### Feature: User as Member (memebr group)
+#### Scenario: User member login
+        Given:  I a user within member group I want to login
+        When    enter correct username & password
+        Then    I'm redirected to member home page
+
+### Feature: User Settings (memebr or admin)
+#### Scenario: User updates settings
+        Given

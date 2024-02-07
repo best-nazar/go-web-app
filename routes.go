@@ -61,6 +61,7 @@ func initializeRoutes() {
 		adminRoutes.GET("/users/list", controller.UsersList)
 		adminRoutes.GET("/user/details/:id", controller.UserDetails)
 		adminRoutes.POST("/user/update", controller.UserUpdate)
+		adminRoutes.POST("/user/update/status", controller.UserActivateDeactivate)
 	}
 
 	// Group article related routes together

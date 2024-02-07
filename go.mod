@@ -41,7 +41,6 @@ require (
 require (
 	github.com/goccy/go-json v0.10.2
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
-	github.com/pkg/errors v0.9.1
 	golang.org/x/exp v0.0.0-20221227203929-1b447090c38c
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

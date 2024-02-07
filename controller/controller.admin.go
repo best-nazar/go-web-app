@@ -3,8 +3,11 @@
 package controller
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/best-nazar/web-app/helpers"
@@ -12,7 +15,6 @@ import (
 	"github.com/best-nazar/web-app/repository"
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"golang.org/x/exp/slices"
 )
 
@@ -98,7 +100,7 @@ func AddUserToGroup(c *gin.Context) {
 		)
 	} else {
 		repository.AddCasbinUserRole(ug.Username, ug.Group)
-		c.Redirect(http.StatusFound, "/admin/groups/list?tab="+ug.Group)
+		c.Redirect(http.StatusFound, "/admin/groups/list?tab=" + ug.Group)
 	}
 }
 
@@ -196,10 +198,14 @@ func UserDetails(c *gin.Context) {
 	user, nRows := repository.FindUserById(id)
 
 	if nRows > 0 {
+		casbinEnforcer := c.MustGet("casbinEnforcer").(*casbin.Enforcer)
+		groups, _ := casbinEnforcer.GetRolesForUser(user.Username, "")
+
 		Render(c, gin.H{
 			"title":       "User Details",
 			"description": user.Name,
 			"payload":     user,
+			"groups": 	   strings.Join(groups, ", "),
 			"errors":      helpers.Errors(c),
 		},
 			"user-details.html",
@@ -219,11 +225,50 @@ func UserUpdate(c *gin.Context) {
 
 	if err == nil {
 		repository.UpdateUser(user)
-		UsersList(c)
+		c.Redirect(http.StatusFound, "/admin/user/details/" + strconv.Itoa(int(user.ID)))
 	} else {
 		c.Error(err)
 		UsersList(c)
 	}
+}
+
+func UserActivateDeactivate(c *gin.Context) {
+	id := c.PostForm("ID")
+	if id == "" {
+		idJSON := map[string]int {
+			"ID": 0,
+		}
+		c.ShouldBind(&idJSON)
+		id = strconv.Itoa(idJSON["ID"])
+	}
+	
+	err := c.ShouldBind(&id)
+
+	if (err != nil) {
+		c.Error(err)
+	}
+
+	findUser, rNum := repository.FindUserById(id)
+
+	if (rNum == 0) {
+		c.Error(errors.New("User ID|" + id + "not found"))
+	} else {
+		if findUser.Active == 0 {
+			user := model.UpdateUser {
+				ID: findUser.ID,
+				Active: 1,
+			}
+			repository.UpdateUser(&user)
+		} else {  
+			user := model.UpdateUser {
+				ID: findUser.ID,
+				Active: 0,
+			}
+			repository.DeactivateUser(&user)
+		}
+	}
+	
+	c.Redirect(http.StatusFound, "/admin/user/details/" + fmt.Sprintf("%v", id))
 }
 
 func validateRoles(c *gin.Context, group string) {
