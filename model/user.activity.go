@@ -3,10 +3,6 @@
 // User acvitity journal
 package model
 
-import (
-
-)
-
 type UserActivity struct {
 	ID        uint   `gorm:"primaryKey"`
 	Activity  string `json:"activity"`

@@ -1,7 +1,9 @@
 # Gin App configuration
 # Set a default role to newly registered user. Examples: guest, member, admin.
-default-casbin-group: member
+default_casbin_group: member
 # Turn on/off user activity logging to the DB
 user-activity-logging: false
 #restricted words for registration as a 'username'. No spaces allowed.
-username-restricted-words: admin,member,guest,user
+username_restricted_words: admin,member,guest,user
+#support(or admin's) email for public
+contact_support_email: admin@somedomain.com

@@ -1,8 +1,9 @@
 package model
 
 type Config struct {
-	DefaultCasbinGroup string `yaml:"default-casbin-group"`
-	UserActivityLogging bool `yaml:"user-activity-logging"`
-	UsernameRestrictedWords string `yaml:"username-restricted-words"`
+	DefaultCasbinGroup string `yaml:"default_casbin_group"`
+	UserActivityLogging bool `yaml:"user_activity_logging"`
+	UsernameRestrictedWords string `yaml:"username_restricted_words"`
 	Tags []string `yaml:"tags"`
+	ContactSupportEmail	string	`yaml:"contact_support_email"`
 }

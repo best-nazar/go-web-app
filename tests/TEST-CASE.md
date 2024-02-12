@@ -21,6 +21,10 @@
                 or wrong password
         When    I enter creadentials
         Then    I see the error message on the Login page in warning box.
+
+        Given: I have correct username and password, but I am inactive user,
+        When    I log in to system
+        Then    I get redirected to the Info page '/u/locked'
     
 #### Scenario: User Logout
         Given: As a looged user, I'd like to logout

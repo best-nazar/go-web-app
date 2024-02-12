@@ -68,6 +68,7 @@ func UpdateUser(user *model.UpdateUser) (*model.User, int64) {
 			Email: user.Email,
 			Birthday: user.Birthday,
 			Active: user.Active,
+			SuspendedAt: user.SuspendedAt,
 		})
 	}
 
@@ -90,7 +91,8 @@ func DeactivateUser(user *model.UpdateUser) (int64, error) {
 
 	if findResult.RowsAffected > 0 {
 		result = db.GetDBConnectionInstance().Model(&lookupUser).Updates(map[string]interface{}{
-			"active" : 0,
+			"Active" : 0,
+			"SuspendedAt" : user.SuspendedAt,
 		})
 	}
 	return result.RowsAffected, findResult.Error

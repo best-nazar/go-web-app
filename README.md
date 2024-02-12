@@ -18,7 +18,7 @@ This is the code from the article [Building Go Web Applications and Microservice
 6.1. Admin user
 6.2. To register a User with admin rights, change the configuration in config.yaml to the next 
 ```
-default-casbin-group: admin
+default_casbin_group: admin
 ```
 Then hit the '/u/register' URL and fill in the form. Then return the configuration in config.yaml to 'member'.
 
@@ -58,7 +58,7 @@ type CasbinRole struct {
 Keeps the history of actions like: page opened, data added/updated/deleted
 Turn on/off in config.yaml and check DB table 'user_activities'
 ```
-user-activity-logging: true
+user_activity_logging: true
 ```
 
 9. DB Migration
@@ -70,10 +70,5 @@ Condition - if no tables created then auto run migration. In other words, drop a
 10.2. Add the property to the Struct 'model.Config'
 10.3. Read the config
 ```
-	config, exist := c.Get("config")
-	role := config.(model.Config)
-
-	if !model.Config.DefaultCasbinGroup {
-		panic("The Key 'default-casbin-group' is not found in config.yaml")
-	}
+	config := c.MustGet("config").(model.Config)
 ```

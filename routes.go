@@ -15,6 +15,8 @@ func initializeRoutes() {
 	router.Use(middleware.SetUserStatus())
 	// ACL or RBAC checks
 	router.Use(middleware.CheckCasbinRules())
+	// Not Active users should be redirected
+	router.Use(middleware.IsUserActive())
 
 	// Handle the index route
 	router.GET("/", controller.ShowIndexPage)
@@ -43,6 +45,8 @@ func initializeRoutes() {
 		// Handle POST requests at /u/register
 		// Ensure that the user is not logged in by using the middleware
 		userRoutes.POST("/register", controller.Register)
+
+		userRoutes.GET("/locked", controller.UserLocked)
 	}
 
 	// Group administrative routes

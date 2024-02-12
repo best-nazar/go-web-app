@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/best-nazar/web-app/helpers"
 	"github.com/best-nazar/web-app/model"
@@ -233,25 +234,18 @@ func UserUpdate(c *gin.Context) {
 }
 
 func UserActivateDeactivate(c *gin.Context) {
-	id := c.PostForm("ID")
-	if id == "" {
-		idJSON := map[string]int {
-			"ID": 0,
-		}
-		c.ShouldBind(&idJSON)
-		id = strconv.Itoa(idJSON["ID"])
-	}
-	
-	err := c.ShouldBind(&id)
+	var id  model.Id
+
+	err := id.ShouldBindId(c)
 
 	if (err != nil) {
 		c.Error(err)
 	}
 
-	findUser, rNum := repository.FindUserById(id)
+	findUser, rNum := repository.FindUserById(id.String())
 
 	if (rNum == 0) {
-		c.Error(errors.New("User ID|" + id + "not found"))
+		c.Error(errors.New("User ID|" + id.String() + " not found"))
 	} else {
 		if findUser.Active == 0 {
 			user := model.UpdateUser {
@@ -263,12 +257,13 @@ func UserActivateDeactivate(c *gin.Context) {
 			user := model.UpdateUser {
 				ID: findUser.ID,
 				Active: 0,
+				SuspendedAt: time.Now().Unix(),
 			}
 			repository.DeactivateUser(&user)
 		}
 	}
 	
-	c.Redirect(http.StatusFound, "/admin/user/details/" + fmt.Sprintf("%v", id))
+	c.Redirect(http.StatusFound, "/admin/user/details/" + fmt.Sprintf("%v", id.String()))
 }
 
 func validateRoles(c *gin.Context, group string) {

@@ -65,9 +65,9 @@ func ShowRegistrationPage(c *gin.Context) {
 func Register(c *gin.Context) {
 	var user model.User
 
-	e:= c.ShouldBind(&user)
+	e := c.ShouldBind(&user)
 
-	if e!=nil {
+	if e != nil {
 		c.Error(e)
 	}
 
@@ -83,7 +83,7 @@ func Register(c *gin.Context) {
 
 	conf := c.MustGet("config").(model.Config)
 
-	if helpers.Contains(strings.Split(conf.UsernameRestrictedWords,","), user.Username) {
+	if helpers.Contains(strings.Split(conf.UsernameRestrictedWords, ","), user.Username) {
 		c.Error(errors.New("username|" + user.Username + " isn't available"))
 		Render(c, gin.H{"errors": helpers.Errors(c)}, "register.html", http.StatusBadRequest)
 		return
@@ -96,8 +96,10 @@ func Register(c *gin.Context) {
 		saveAuthToken(c, u)
 
 		Render(c, gin.H{
-			"title":   "Successful registration & Login",
-			"payload": &u}, "login-successful.html", http.StatusOK)
+			"title": "Successful registration",
+			"user":  &u,
+			"admin": conf.ContactSupportEmail,
+		}, "register-successful.html", http.StatusOK)
 
 	} else {
 		// If the username/password combination is invalid,
@@ -105,6 +107,40 @@ func Register(c *gin.Context) {
 		c.Error(err)
 		Render(c, gin.H{"errors": helpers.Errors(c)}, "register.html", http.StatusBadRequest)
 	}
+}
+
+func UserLocked(c *gin.Context) {
+	var user  *model.User
+	var nRows int64
+	var idModel = model.Id{}
+
+	uerr := c.ShouldBindQuery(&idModel)
+
+	if uerr == nil {
+		user, nRows = repository.FindUserById(idModel.String())
+	} else {
+		c.Error(uerr)
+	}
+
+	if nRows == 0 {
+		c.Error(errors.New("User ID|" +  idModel.String() + " not found"))
+	} else {	
+		conf := c.MustGet("config").(model.Config)
+
+		Render(c, gin.H{
+			"title": "Acount is locked ",
+			"user":  &user,
+			"admin": conf.ContactSupportEmail,
+		}, "register-successful.html", http.StatusOK)
+
+		return
+	}
+
+	Render(c, gin.H{
+		"title": "Error",
+		"description": "Account is locked",
+		"errors" : helpers.Errors(c),
+	}, "errors.html", http.StatusBadRequest)
 }
 
 // Register a new user with the given username and password
