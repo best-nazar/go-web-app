@@ -2,6 +2,8 @@
 
 package model
 
+import "github.com/best-nazar/web-app/security"
+
 type User struct {
 	ID          uint          `gorm:"primaryKey" json:"id"`
 	Name        string        `json:"fullName" form:"full_name" binding:"required"`
@@ -28,6 +30,6 @@ type UpdateUser struct {
 }
 
 // Checks if the password is valid
-func IsPasswordValid(user User, password string) bool {
-	return user.Password == password
+func (user *User) IsPasswordValid(password string) bool {
+	return user.Password == security.ComputeHmac256(password)
 }

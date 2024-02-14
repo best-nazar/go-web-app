@@ -3,6 +3,8 @@
 package middleware
 
 import (
+	"errors"
+	"net/http"
 	"strconv"
 
 	sqladapter "github.com/best-nazar/web-app/db"
@@ -17,36 +19,41 @@ import (
 // This middleware sets whether the user is logged in or not
 func SetUserStatus() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if token, err := c.Cookie("token"); err == nil || token != "" {
-			auth, _ := c.Cookie("auth")
-			c.Request.Header.Set("Authorization", auth)
-			c.Set("is_logged_in", true) // Used for UI/Menu template (see render() in main.go)
+		var user *model.User
+		var err error
+		username, password, isAuth := c.Request.BasicAuth() // if request comes from API
+		token, _ := c.Cookie("token") //if request comes from UI
 
-			_, id, errt := helpers.RecoverSessionToken(token)
-			user, num := repository.FindUserById(strconv.Itoa(id))
+		if isAuth {
+			user, err = getUserFromAuth(username)
 
-			if num > 0 {
-				c.Set("user", user)
+			if err != nil || !user.IsPasswordValid(password) {
+				c.AbortWithStatus(http.StatusForbidden)
 			}
+		} else {
+			user, err = getUserFromToken(token)
+		}
+		
+		if err == nil {
+			c.Set("is_logged_in", true) // Used for UI/Menu template (see render.go)
+			c.Set("user", user)
 
-			if errt != nil {
-				c.Set("is_logged_in", false)
-			} else {
-				cf := c.MustGet("config")
-				config := cf.(model.Config)
-				if config.UserActivityLogging && c.FullPath() != "" {
-					repository.AddUserActivity(c.Request.URL.String(), "path", id)
-				}
+			c.Request.SetBasicAuth(user.Username, "")
+
+			config := c.MustGet("config").(model.Config)
+
+			if config.UserActivityLogging && c.FullPath() != "" {
+				repository.AddUserActivity(c.Request.URL.String(), "path", int(user.ID))
 			}
 
 			c.Next()
 		} else {
+			// user was not found in token. let's search in BasicAuth
 			c.Set("is_logged_in", false)
 			c.Set("user", nil)
-			// Set guest user if he's not logged in
-			if c.Request.Header.Get("Authorization") == "" {
-				c.Request.SetBasicAuth(model.GUEST_ROLE, "")
-			}
+			// Set guest user if he's not logged in for casbin auth (we use 'guest' for public url)
+			c.Request.SetBasicAuth(model.GUEST_ROLE, "")
+
 			c.Next()
 		}
 	}
@@ -76,4 +83,29 @@ func CheckCasbinRules() gin.HandlerFunc {
 		authz.NewAuthorizer(casbinEnforcer)(c)
 		c.Next()
 	}
+}
+
+func getUserFromToken(token string) (*model.User, error) {
+	_, id, errt := helpers.RecoverSessionToken(token)
+	if errt != nil {
+		return nil, errt
+	}
+	
+	user, num := repository.FindUserById(strconv.Itoa(id))
+
+	if num == 0 {
+		return nil, errors.New("user not found")
+	}
+
+	return user, nil
+}
+
+func getUserFromAuth(username string) (*model.User, error) {
+	user, count := repository.GetUserByUsername(username)
+
+	if count == 0 {
+		return nil, errors.New("user not found")
+	}
+
+	return user, nil
 }

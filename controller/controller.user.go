@@ -26,11 +26,11 @@ func ShowLoginPage(c *gin.Context) {
 func PerformLogin(c *gin.Context) {
 	// Obtain the POSTed username and password values
 	username := c.PostForm("username")
-	password := security.ComputeHmac256(c.PostForm("password"))
+	password := c.PostForm("password")
 
 	user, recNum := repository.GetUserByUsername(username)
 	// Check if the username/password combination is valid
-	if model.IsPasswordValid(*user, password) && recNum > 0 {
+	if user.IsPasswordValid(password) && recNum > 0 {
 		// If the username/password is valid set the token in a cookie
 		saveAuthToken(c, user)
 
@@ -164,6 +164,4 @@ func saveAuthToken(c *gin.Context, user *model.User) {
 	c.Set("is_logged_in", true)
 	var sameSiteCookie http.SameSite
 	c.SetSameSite(sameSiteCookie)
-	c.Request.SetBasicAuth(user.Username, user.Password)
-	c.SetCookie("auth", c.Request.Header.Get("Authorization"), 3600, "", "", false, true)
 }
