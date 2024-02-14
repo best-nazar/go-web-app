@@ -10,7 +10,7 @@ import (
 )
 
 // Logs new User Activity
-func AddUserActivity (activity, data string, userID int64) *model.UserActivity {
+func AddUserActivity (activity, data string, userID int) *model.UserActivity {
 	userActivity := model.UserActivity{
 		Activity: activity,
 		Data: data,

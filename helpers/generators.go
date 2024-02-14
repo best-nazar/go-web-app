@@ -5,7 +5,7 @@ package helpers
 import (
 	"encoding/base64"
 	"errors"
-	"io/ioutil"
+	"io"
 	"log"
 	"strconv"
 	"strings"
@@ -22,9 +22,9 @@ func GenerateSessionToken(data string) string {
 }
 
 // Gets data from token
-func RecoverSessionToken(token string) (int64, int64, error) {
+func RecoverSessionToken(token string) (int64, int, error) {
 	decode := base64.NewDecoder(base64.StdEncoding, strings.NewReader(token))
-	data, err := ioutil.ReadAll(decode)
+	data, err := io.ReadAll(decode)
 
 	if err != nil {
 		log.Fatal(err, data)
@@ -39,7 +39,7 @@ func RecoverSessionToken(token string) (int64, int64, error) {
 		return 0, 0, err
 	} else {
 		datetime, err := strconv.ParseInt(contArr[0], 10, 64)
-		userID, _ := strconv.ParseInt(contArr[1], 10, 64)
+		userID, _ := strconv.Atoi(contArr[1])
 
 		return datetime, userID, err
 	}	

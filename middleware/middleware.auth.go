@@ -3,6 +3,8 @@
 package middleware
 
 import (
+	"strconv"
+
 	sqladapter "github.com/best-nazar/web-app/db"
 	"github.com/best-nazar/web-app/helpers"
 	"github.com/best-nazar/web-app/model"
@@ -21,7 +23,11 @@ func SetUserStatus() gin.HandlerFunc {
 			c.Set("is_logged_in", true) // Used for UI/Menu template (see render() in main.go)
 
 			_, id, errt := helpers.RecoverSessionToken(token)
-			c.Set("user_id", int(id))
+			user, num := repository.FindUserById(strconv.Itoa(id))
+
+			if num > 0 {
+				c.Set("user", user)
+			}
 
 			if errt != nil {
 				c.Set("is_logged_in", false)
@@ -36,6 +42,7 @@ func SetUserStatus() gin.HandlerFunc {
 			c.Next()
 		} else {
 			c.Set("is_logged_in", false)
+			c.Set("user", nil)
 			// Set guest user if he's not logged in
 			if c.Request.Header.Get("Authorization") == "" {
 				c.Request.SetBasicAuth(model.GUEST_ROLE, "")

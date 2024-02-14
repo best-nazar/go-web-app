@@ -10,9 +10,6 @@ import (
 // If the header doesn't specify this, HTML is rendered, provided that
 // the template name is present
 func Render(c *gin.Context, data gin.H, templateName string, httpStatus int) {
-	loggedInInterface, _ := c.Get("is_logged_in")
-	data["is_logged_in"] = loggedInInterface.(bool)
-
 	switch c.Request.Header.Get("Accept") {
 	case "application/json":
 		// Respond with JSON
@@ -22,6 +19,12 @@ func Render(c *gin.Context, data gin.H, templateName string, httpStatus int) {
 		c.XML(httpStatus, data)
 	default:
 		// Respond with HTML
+		setTemplateVars(c, data)
 		c.HTML(httpStatus, templateName, data)
 	}
+}
+
+func setTemplateVars(c *gin.Context, data gin.H) {
+	loggedInInterface, _ := c.Get("is_logged_in")
+	data["is_logged_in"] = loggedInInterface.(bool)
 }

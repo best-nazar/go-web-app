@@ -199,8 +199,7 @@ func UserDetails(c *gin.Context) {
 	user, nRows := repository.FindUserById(id)
 
 	if nRows > 0 {
-		casbinEnforcer := c.MustGet("casbinEnforcer").(*casbin.Enforcer)
-		groups, _ := casbinEnforcer.GetRolesForUser(user.Username, "")
+		groups := c.MustGet("user_groups").([]string)
 
 		Render(c, gin.H{
 			"title":       "User Details",

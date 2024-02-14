@@ -18,7 +18,7 @@ func initializeRoutes() {
 	// Not Active users should be redirected
 	router.Use(middleware.IsUserActive())
 
-	// Handle the index route
+	//the index page
 	router.GET("/", controller.ShowIndexPage)
 
 	// Group user related routes together
