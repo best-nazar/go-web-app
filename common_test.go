@@ -11,7 +11,6 @@ import (
 )
 
 var tmpUserList []model.User
-var tmpArticleList []model.Article
 
 // This function is used to do setup before executing the test functions
 func TestMain(m *testing.M) {
@@ -46,17 +45,4 @@ func testMiddlewareRequest(t *testing.T, r *gin.Engine, expectedHTTPCode int) {
 	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
 		return w.Code == expectedHTTPCode
 	})
-}
-
-// This function is used to store the main lists into the temporary one
-// for testing
-func saveLists() {
-	// tmpUserList = userList
-	// tmpArticleList = articleList
-}
-
-// This function is used to restore the main lists from the temporary one
-func restoreLists() {
-	// userList = tmpUserList
-	// articleList = tmpArticleList
 }

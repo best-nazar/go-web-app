@@ -66,20 +66,4 @@ func initializeRoutes() {
 		adminRoutes.POST("/user/update", controller.UserUpdate)
 		adminRoutes.POST("/user/update/status", controller.UserActivateDeactivate)
 	}
-
-	// Group article related routes together
-	articleRoutes := router.Group("/article")
-	{
-		// Handle GET requests at /article/view/some_article_id
-		articleRoutes.GET("/view/:article_id", controller.GetArticle)
-
-		// Handle the GET requests at /article/create
-		// Show the article creation page
-		// Ensure that the user is logged in by using the middleware
-		articleRoutes.GET("/create", controller.ShowArticleCreationPage)
-
-		// Handle POST requests at /article/create
-		// Ensure that the user is logged in by using the middleware
-		articleRoutes.POST("/create", controller.CreateArticle)
-	}
 }

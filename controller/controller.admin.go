@@ -161,7 +161,7 @@ func RemoveCasbinRoute(c *gin.Context) {
 	c.Request.ParseForm()
 	for key, values := range c.Request.PostForm {
 		if key != "ID" {
-			c.Error(errors.New("Missing ID"))
+			c.Error(errors.New("missing ID"))
 			c.AbortWithError(http.StatusBadRequest, c.Errors.Last())
 			return
 		}
