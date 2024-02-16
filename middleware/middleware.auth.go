@@ -46,7 +46,7 @@ func SetUserStatus() gin.HandlerFunc {
 		
 		if err == nil {
 			c.Set("is_logged_in", true) // Used for UI/Menu template (see render.go)
-			c.Set("user", user.ConvertUpdate()) //UpdateUser struct has no password property for security reason
+			c.Set("user", user.ConvertToDTO()) //UpdateUser struct has no password property for security reason
 
 			isUserActive(c, user)
 			//casbin RBAC uses BasicAuth() to get user for rule validation
@@ -137,10 +137,10 @@ func isUserActive(c *gin.Context, user *model.User) {
 func setUserGroups(c *gin.Context) {
 	casbinEnforcer, hasCE := c.Get("casbinEnforcer")
 	usr := c.MustGet("user")
-	var user *model.UpdateUser
+	var user *model.UserDTO
 
 	if usr != nil {
-		user = usr.(*model.UpdateUser)
+		user = usr.(*model.UserDTO)
 	}
 
 	if hasCE && usr != nil {

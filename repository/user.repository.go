@@ -49,7 +49,7 @@ func FindUserById(id string) (*model.User, int64) {
 	return user, result.RowsAffected
 }
 
-func UpdateUser(user *model.UpdateUser) (*model.User, int64) {
+func UpdateUser(user *model.UserDTO) (*model.User, int64) {
 	var result *gorm.DB
 
 	lookupUser := model.User{
@@ -76,7 +76,7 @@ func UpdateUser(user *model.UpdateUser) (*model.User, int64) {
 }
 
 // active value 0 | 1. Field can be updated only via interface{}
-func DeactivateUser(user *model.UpdateUser) (int64, error) {
+func DeactivateUser(user *model.UserDTO) (int64, error) {
 	var result *gorm.DB
 
 	lookupUser := model.User{

@@ -220,7 +220,7 @@ func UserDetails(c *gin.Context) {
 }
 
 func UserUpdate(c *gin.Context) {
-	var user *model.UpdateUser
+	var user *model.UserDTO
 
 	err := c.ShouldBind(&user)
 
@@ -248,13 +248,13 @@ func UserActivateDeactivate(c *gin.Context) {
 		c.Error(errors.New("User ID|" + id.String() + " not found"))
 	} else {
 		if findUser.Active == 0 {
-			user := model.UpdateUser {
+			user := model.UserDTO {
 				ID: findUser.ID,
 				Active: 1,
 			}
 			repository.UpdateUser(&user)
 		} else {  
-			user := model.UpdateUser {
+			user := model.UserDTO {
 				ID: findUser.ID,
 				Active: 0,
 				SuspendedAt: time.Now().Unix(),
