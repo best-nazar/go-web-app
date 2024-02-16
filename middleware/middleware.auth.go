@@ -31,7 +31,9 @@ func SetUserStatus() gin.HandlerFunc {
 				c.AbortWithStatus(http.StatusForbidden)
 			}
 		} else {
-			user, err = getUserFromToken(token)
+			ipAddr := c.ClientIP()
+
+			user, err = getUserFromToken(token, ipAddr)
 		}
 		
 		if err == nil {
@@ -85,8 +87,9 @@ func CheckCasbinRules() gin.HandlerFunc {
 	}
 }
 
-func getUserFromToken(token string) (*model.User, error) {
-	_, id, errt := helpers.RecoverSessionToken(token)
+func getUserFromToken(token string, ip string) (*model.User, error) {
+	_, id, errt := helpers.RecoverSessionToken(token, ip)
+
 	if errt != nil {
 		return nil, errt
 	}

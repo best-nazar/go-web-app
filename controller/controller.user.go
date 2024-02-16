@@ -159,7 +159,9 @@ func registerNewUser(user *model.User, password string, role string) (*model.Use
 
 // Save Auth data and token for UI
 func saveAuthToken(c *gin.Context, user *model.User) {
-	token := helpers.GenerateSessionToken(strconv.FormatUint(uint64(user.ID), 10))
+	ipAddr := c.ClientIP()
+	data := strconv.FormatUint(uint64(user.ID), 10)
+	token := helpers.GenerateSessionToken(data, ipAddr)
 	c.SetCookie("token", token, 3600, "", "", false, true)
 	c.Set("is_logged_in", true)
 	var sameSiteCookie http.SameSite
