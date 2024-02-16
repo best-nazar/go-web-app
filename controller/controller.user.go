@@ -5,6 +5,7 @@ package controller
 import (
 	"errors"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -96,7 +97,7 @@ func Register(c *gin.Context) {
 
 	conf := c.MustGet("config").(model.Config)
 
-	if helpers.Contains(strings.Split(conf.UsernameRestrictedWords, ","), user.Username) {
+	if slices.Contains(strings.Split(conf.UsernameRestrictedWords, ","), user.Username) {
 		c.Error(errors.New("username|" + user.Username + " isn't available"))
 		Render(c, gin.H{"errors": helpers.Errors(c)}, "register.html", http.StatusBadRequest)
 		return
