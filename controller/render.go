@@ -3,6 +3,9 @@
 package controller
 
 import (
+	"slices"
+
+	"github.com/best-nazar/web-app/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,5 +29,14 @@ func Render(c *gin.Context, data gin.H, templateName string, httpStatus int) {
 
 func setTemplateVars(c *gin.Context, data gin.H) {
 	loggedInInterface, _ := c.Get("is_logged_in")
+	ug, hasUG := c.Get("user_groups") 
+	isAdmin := false
+
+	if hasUG  {
+		ug := ug.([]string)
+		isAdmin = slices.Contains(ug, model.ADMIN_ROLE)
+	}
 	data["is_logged_in"] = loggedInInterface.(bool)
+	data["is_admin"] = isAdmin
+	data["user"] = c.MustGet("user")
 }

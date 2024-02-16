@@ -15,6 +15,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func ShowUserHomePage(c *gin.Context) {
+	userLoggedIn, hasStatus := c.Get("is_logged_in")
+
+	if hasStatus {
+		isLogedIn := userLoggedIn.(bool)
+
+		if isLogedIn {
+			Render(c, gin.H{
+				"title":   "Successful Login",
+			}, "login-successful.html", http.StatusOK)
+		}
+	}
+
+	c.AbortWithStatus(http.StatusForbidden)
+}
+
 func ShowLoginPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
 	Render(c, gin.H{
@@ -33,10 +49,7 @@ func PerformLogin(c *gin.Context) {
 	if user.IsPasswordValid(password) && recNum > 0 {
 		// If the username/password is valid set the token in a cookie
 		saveAuthToken(c, user)
-
-		Render(c, gin.H{
-			"title":   "Successful Login",
-			"payload": &user}, "login-successful.html", http.StatusOK)
+		c.Redirect(http.StatusFound, "/u")
 	} else {
 		// If the username/password combination is invalid,
 		// show the error message on the login page

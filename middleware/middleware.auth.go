@@ -4,7 +4,9 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 
 	sqladapter "github.com/best-nazar/web-app/db"
@@ -16,11 +18,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var urlToExclude = []string {
+	"/u/locked",
+	"/u/logout",
+}
+
 // This middleware sets whether the user is logged in or not
 func SetUserStatus() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user *model.User
-		var err error
+		var err error		
+
 		username, password, isAuth := c.Request.BasicAuth() // if request comes from API
 		token, _ := c.Cookie("token") //if request comes from UI
 
@@ -38,10 +46,11 @@ func SetUserStatus() gin.HandlerFunc {
 		
 		if err == nil {
 			c.Set("is_logged_in", true) // Used for UI/Menu template (see render.go)
-			c.Set("user", user)
+			c.Set("user", user.ConvertUpdate()) //UpdateUser struct has no password property for security reason
 
-			c.Request.SetBasicAuth(user.Username, "")
-
+			isUserActive(c, user)
+			//casbin RBAC uses BasicAuth() to get user for rule validation
+			c.Request.SetBasicAuth(user.Username, "") 
 			config := c.MustGet("config").(model.Config)
 
 			if config.UserActivityLogging && c.FullPath() != "" {
@@ -81,8 +90,8 @@ func CheckCasbinRules() gin.HandlerFunc {
 		// 	casbinEnforcer = casbinEnforcer.(*casbin.Enforcer)
 		// }
 		c.Set("casbinEnforcer", casbinEnforcer)
-		
 		authz.NewAuthorizer(casbinEnforcer)(c)
+		setUserGroups(c)
 		c.Next()
 	}
 }
@@ -109,6 +118,36 @@ func getUserFromAuth(username string) (*model.User, error) {
 	if count == 0 {
 		return nil, errors.New("user not found")
 	}
-
+	
 	return user, nil
+}
+
+func isUserActive(c *gin.Context, user *model.User) {
+		path := c.Request.URL.Path
+		
+		if !slices.Contains(urlToExclude, path) {
+
+			if user.Active == 0 {
+				c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/u/locked?id=%v", user.ID))
+				c.Abort()
+			}
+		}
+}
+
+func setUserGroups(c *gin.Context) {
+	casbinEnforcer, hasCE := c.Get("casbinEnforcer")
+	usr := c.MustGet("user")
+	var user *model.UpdateUser
+
+	if usr != nil {
+		user = usr.(*model.UpdateUser)
+	}
+
+	if hasCE && usr != nil {
+		ce := casbinEnforcer.(*casbin.Enforcer)
+		groups, _ := ce.GetRolesForUser(user.Username, "")
+		c.Set("user_groups", groups)
+	} else {
+		c.Set("user_groups", []string{})
+	}
 }

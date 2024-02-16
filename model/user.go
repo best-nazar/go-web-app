@@ -21,6 +21,7 @@ type User struct {
 type UpdateUser struct {
 	ID          uint          `gorm:"-" json:"id"`
 	Name        string        `json:"fullName" form:"full_name" binding:"required" gorm:"-"`
+	Username	string		  `gorm:"-" json:"username" form:"username"`
 	Email       string        `json:"email" form:"email" gorm:"-" binding:"required,email"`
 	Birthday    string		  `json:"birthday" form:"birthday" gorm:"-" binding:"required"`
 	Token       string        `gorm:"-"`
@@ -32,4 +33,15 @@ type UpdateUser struct {
 // Checks if the password is valid
 func (user *User) IsPasswordValid(password string) bool {
 	return user.Password == security.ComputeHmac256(password)
+}
+
+func (user *User) ConvertUpdate() *UpdateUser {
+	return &UpdateUser{
+		ID: user.ID,
+		Name: user.Name,
+		Username: user.Username,
+		Email: user.Email,
+		Birthday: user.Birthday,
+		Active: user.Active,
+	}
 }
