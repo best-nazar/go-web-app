@@ -88,3 +88,21 @@ user_activity_logging: true
 ```
 	config := c.MustGet("config").(model.Config)
 ```
+
+## Screenshots
+### Guest screens
+- Login:
+![ScreenShot](/documentation/login.png)
+- Register: 
+![ScreenShot](/documentation/register.png)
+### Administration back office
+- Menu:
+![ScreenShot](/documentation/menu.png)
+- Casbin groups manager:
+![ScreenShot](/documentation/groups_manager.png)
+- Users manager:
+![ScreenShot](/documentation/user_manager.png)
+- User details:
+![ScreenShot](/documentation/user_administration.png)
+- Casbin URL resource manager:
+![ScreenShot](/documentation/url_access_manager.png)
