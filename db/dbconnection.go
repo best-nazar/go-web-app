@@ -4,9 +4,11 @@ package db
 
 import (
 	"log"
+	"os"
 	"sync"
 
 	"github.com/best-nazar/web-app/model"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -20,13 +22,18 @@ var singleInstance *gorm.DB
 // Gets DB connection instance
 func GetDBConnectionInstance() *gorm.DB {
 	if singleInstance == nil {
+		//Creating single instance now
 		lock.Lock()
 		defer lock.Unlock()
+
 		if singleInstance == nil {
-			log.Println("Creating single instance now.")
+			err := godotenv.Load(".env")
+ 			if err != nil{
+				panic(".env not found")
+			}
 
 			// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
-			dsn := "testu1:1234@tcp(localhost:3306)/test_crud?charset=utf8mb4&parseTime=True&loc=Local"
+			dsn := os.Getenv("DB_DSN")
 			db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 			if err == nil {
