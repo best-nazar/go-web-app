@@ -14,7 +14,7 @@
     <div class="container mt-1">
         <div class="card">
             <div class="card-body text-center">
-              <img src="/assets/images/avatar.png" style="width:100px;margin-top:-65px" alt="User" class="img-fluid img-thumbnail rounded-circle border-0 mb-3">
+              <img src="/{{ .avatar_path }}" style="width:100px;margin-top:-65px" alt="User" class="img-fluid img-thumbnail rounded-circle border-0 mb-3">
               <h5 class="card-title">{{ .payload.Username }}</h5>
               <p class="text-secondary mb-1">{{ .payload.Email }}</p>
               <p class="text-muted font-size-sm"></p>
@@ -47,7 +47,8 @@
                             <td>Update at</td><td>{{ formatDate .payload.UpdatedAt}}</td>
                         </tr>
                         <tr scope="row">
-                            <td>Suspended at</td><td>{{ if (eq .payload.SuspendedAt 0) }} - {{ else }} {{ formatDate .payload.SuspendedAt }} {{ end }}</td>
+                            {{.payload.SuspendedAt}}
+                            <td>Suspended at</td><td>{{ if (eq .payload.SuspendedAt nil) }} - {{ else }} {{ formatDate .payload.SuspendedAt }} {{ end }}</td>
                         </tr>
                         <tr scope="row">
                             <td>Groups</td><td>{{ .groups }}</td>

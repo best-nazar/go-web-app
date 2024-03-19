@@ -3,22 +3,22 @@
 package controller
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/best-nazar/web-app/helpers"
 	"github.com/best-nazar/web-app/model"
+	"github.com/best-nazar/web-app/model/dto"
 	"github.com/best-nazar/web-app/repository"
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/exp/slices"
 )
 
+// Default page for logged user
 func ShowDashboardPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
 	Render(c, gin.H{
@@ -26,6 +26,7 @@ func ShowDashboardPage(c *gin.Context) {
 		"payload": "Dashboard"}, "admin-dashboard.html", http.StatusOK)
 }
 
+// Manage Users and Groups page
 func ShowGroupsListPage(c *gin.Context) {
 	var payload []string
 	role := c.Query("tab")
@@ -63,7 +64,7 @@ func RemoveUserFromGroup(c *gin.Context) {
 
 // Action: Add user to casbin group
 func AddUserToGroup(c *gin.Context) {
-	var ug model.UserGroup
+	var ug dto.UserGroup
 
 	e := c.ShouldBind(&ug)
 
@@ -76,12 +77,11 @@ func AddUserToGroup(c *gin.Context) {
 	_, uNum := repository.GetUserByUsername(ug.Username)
 
 	if uNum == 0 {
-		er := errors.New("username|" + ug.Username + " not found")
-		c.Error(er)
+		c.Error(fmt.Errorf("username '%s' not found", ug.Username))
 	}
 
 	if _, count := repository.FindCasbinGroupByNameAndRole(ug.Username, ug.Group); count != 0 {
-		c.Error(errors.New("username|" + ug.Username + " in Group " + ug.Group + " already exist"))
+		c.Error(fmt.Errorf("username '%s' in Group '%s' already exist", ug.Username, ug.Group))
 	}
 
 	if len(c.Errors) > 0 {
@@ -105,6 +105,7 @@ func AddUserToGroup(c *gin.Context) {
 	}
 }
 
+// Manage URL resources and access groups page
 func ShowCasbinRoutes(c *gin.Context) {
 	payload := repository.GetCasbinPolicies()
 	roles := repository.ListRoles()
@@ -121,6 +122,8 @@ func ShowCasbinRoutes(c *gin.Context) {
 	)
 }
 
+// Manage URL resources page
+// Add route with access permissions
 func AddCasbinRoute(c *gin.Context) {
 	var cr model.CasbinRuleP
 
@@ -137,16 +140,16 @@ func AddCasbinRoute(c *gin.Context) {
 		_, ferr := repository.FindCasbinUrlGroup(&cr)
 
 		if ferr == nil {
-			c.Error(errors.New("rules|" + cr.V1 + " " + cr.V0 + " " + cr.V2 + " exists"))
+			c.Error(fmt.Errorf("rule '" + cr.V1 + " " + cr.V0 + " " + cr.V2 + "' already exists"))
 		}
 	} else {
-		c.Error(errors.New("route|must be valid URL string"))
+		c.Error(fmt.Errorf("route must be valid URL string"))
 	}
 
 	validateRoles(c, cr.V0)
 
 	if idx := slices.Index(model.ACTIONS, cr.V2); idx == -1 {
-		c.Error(errors.New("action|" + cr.V2 + " is not allowed. Allowed values:" + strings.Join(model.ACTIONS, ", ")))
+		c.Error(fmt.Errorf("action '%s' is not allowed. Allowed values: %s", cr.V2, strings.Join(model.ACTIONS, ", ")))
 	}
 
 	if len(c.Errors) > 0 {
@@ -157,11 +160,13 @@ func AddCasbinRoute(c *gin.Context) {
 	}
 }
 
+// Manage URL resources page
+// Remove route from Casbin management 
 func RemoveCasbinRoute(c *gin.Context) {
 	c.Request.ParseForm()
 	for key, values := range c.Request.PostForm {
 		if key != "ID" {
-			c.Error(errors.New("missing ID"))
+			c.Error(fmt.Errorf("missing ID"))
 			c.AbortWithError(http.StatusBadRequest, c.Errors.Last())
 			return
 		}
@@ -176,6 +181,7 @@ func RemoveCasbinRoute(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/admin/casbins/list")
 }
 
+// Show the full list of registered Users page
 func UsersList(c *gin.Context) {
 	statusCode := http.StatusOK
 
@@ -193,6 +199,7 @@ func UsersList(c *gin.Context) {
 	)
 }
 
+// User details page
 func UserDetails(c *gin.Context) {
 	id := c.Param("id")
 
@@ -202,10 +209,18 @@ func UserDetails(c *gin.Context) {
 		casbinEnforcer := c.MustGet("casbinEnforcer").(*casbin.Enforcer)
 		groups, _ := casbinEnforcer.GetRolesForUser(user.Username, "")
 
+		avatar_path := ""
+		if avatar := user.Avatar(); avatar == nil {
+			avatar_path = model.DEFAULT_AVATAR
+		} else {
+			avatar_path = avatar.Path
+		}
+
 		Render(c, gin.H{
 			"title":       "User Details",
 			"description": user.Name,
 			"payload":     user,
+			"avatar_path": avatar_path,
 			"groups": 	   strings.Join(groups, ", "),
 			"errors":      helpers.Errors(c),
 		},
@@ -213,57 +228,54 @@ func UserDetails(c *gin.Context) {
 			http.StatusOK,
 		)
 	} else {
-		c.Error(errors.New("user|ID:" + id + " not found"))
+		c.Error(fmt.Errorf("user ID '%s' not found", id))
 
 		UsersList(c)
 	}
 }
 
+// Action: Update User's data
 func UserUpdate(c *gin.Context) {
-	var user *model.UserDTO
+	var user *dto.UpdateUserDto
 
 	err := c.ShouldBind(&user)
 
 	if err == nil {
 		repository.UpdateUser(user)
-		c.Redirect(http.StatusFound, "/admin/user/details/" + strconv.Itoa(int(user.ID)))
+		c.Redirect(http.StatusFound, "/admin/user/details/" + user.ID)
 	} else {
 		c.Error(err)
 		UsersList(c)
 	}
 }
 
+// Action: make User inactive (locked) or vise-versa
 func UserActivateDeactivate(c *gin.Context) {
-	var id  model.Id
-
-	err := id.ShouldBindId(c)
+	user := &dto.ActivateUserDto{}
+	err := c.ShouldBind(user)
 
 	if (err != nil) {
 		c.Error(err)
 	}
 
-	findUser, rNum := repository.FindUserById(id.String())
+	findUser, rNum := repository.FindUserById(user.ID)
 
 	if (rNum == 0) {
-		c.Error(errors.New("User ID|" + id.String() + " not found"))
+		c.Error(fmt.Errorf("user ID '%s' not found", user.ID))
 	} else {
 		if findUser.Active == 0 {
-			user := model.UserDTO {
-				ID: findUser.ID,
-				Active: 1,
-			}
-			repository.UpdateUser(&user)
+			findUser.Active = 1
+			repository.ActivateUser(findUser)
 		} else {  
-			user := model.UserDTO {
-				ID: findUser.ID,
-				Active: 0,
-				SuspendedAt: time.Now().Unix(),
-			}
-			repository.DeactivateUser(&user)
+			findUser.Active = 0
+			currentTime := time.Now()
+			findUser.SuspendedAt = &currentTime
+
+			repository.DeactivateUser(findUser)
 		}
 	}
 	
-	c.Redirect(http.StatusFound, "/admin/user/details/" + fmt.Sprintf("%v", id.String()))
+	c.Redirect(http.StatusFound, "/admin/user/details/" + fmt.Sprintf("%v", findUser.ID))
 }
 
 func validateRoles(c *gin.Context, group string) {
@@ -271,7 +283,6 @@ func validateRoles(c *gin.Context, group string) {
 	idx := slices.IndexFunc(*(roles), func(c model.CasbinRole) bool { return c.Title == group })
 
 	if idx == -1 {
-		er := errors.New("group|" + group + " not found")
-		c.Error(er)
+		c.Error(fmt.Errorf("group '%s' not found", group))
 	}
 }

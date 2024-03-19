@@ -18,7 +18,7 @@
           {{end}} 
         </li>
 
-        {{ if .is_admin }}
+        {{ if .is_logged_in }}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Admin
@@ -54,8 +54,7 @@
               <span class="dropdown-header">({{ .user.Username }})</span>
             </li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Settings</a></li>
-            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <li><a class="dropdown-item" href="/member/avatar/{{ .user.ID }}">Profile</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="/u/logout">Sign out</a></li>
           </ul>

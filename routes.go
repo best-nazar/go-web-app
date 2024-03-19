@@ -19,33 +19,30 @@ func initializeRoutes() {
 	//the index page
 	router.GET("/", controller.ShowIndexPage)
 
-	// Group user related routes together
-	userRoutes := router.Group("/u")
+	guestRoutes := router.Group("/u")
 	{
-		userRoutes.GET("/", controller.ShowUserHomePage)
-		// Handle the GET requests at /u/login
+		guestRoutes.GET("/", controller.ShowUserHomePage)
 		// Show the login page
+		guestRoutes.GET("/login", controller.ShowLoginPage)
 		// Ensure that the user is not logged in by using the middleware
-		userRoutes.GET("/login", controller.ShowLoginPage)
-
-		// Handle POST requests at /u/login
-		// Ensure that the user is not logged in by using the middleware
-		userRoutes.POST("/login", controller.PerformLogin)
-
-		// Handle GET requests at /u/logout
-		// Ensure that the user is logged in by using the middleware
-		userRoutes.GET("/logout", controller.Logout)
-
-		// Handle the GET requests at /u/register
+		guestRoutes.POST("/login", controller.PerformLogin)
+		// Perform logout
+		guestRoutes.GET("/logout", controller.Logout)
 		// Show the registration page
-		// Ensure that the user is not logged in by using the middleware
-		userRoutes.GET("/register", controller.ShowRegistrationPage)
+		guestRoutes.GET("/register", controller.ShowRegistrationPage)
+		// Redirect user after registration succeeded.
+		guestRoutes.GET("/register/success", controller.ShowRegistrationSuccess)
+		// Submit registration data
+		guestRoutes.POST("/register", controller.Register)
+		// INFO page. User locked
+		guestRoutes.GET("/locked", controller.UserLocked)
+	}
 
-		// Handle POST requests at /u/register
-		// Ensure that the user is not logged in by using the middleware
-		userRoutes.POST("/register", controller.Register)
-
-		userRoutes.GET("/locked", controller.UserLocked)
+	// Action for user within a member area access
+	memberRoutes := router.Group("member")
+	{
+		memberRoutes.GET("/avatar/:id", controller.UploadImage)
+		memberRoutes.POST("/avatar/:id", controller.UploadImage)
 	}
 
 	// Group administrative routes

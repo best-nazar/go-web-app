@@ -6,11 +6,13 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/best-nazar/web-app/model"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // The singleton struct must return the same instance
@@ -20,7 +22,7 @@ var lock = &sync.Mutex{}
 var singleInstance *gorm.DB
 
 // Gets DB connection instance
-func GetDBConnectionInstance() *gorm.DB {
+func GetDBConnectionInstance() *gorm.DB {  
 	if singleInstance == nil {
 		//Creating single instance now
 		lock.Lock()
@@ -31,10 +33,22 @@ func GetDBConnectionInstance() *gorm.DB {
  			if err != nil{
 				panic(".env not found")
 			}
-
+			
+			newLogger := logger.New(
+				log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+				logger.Config{
+				  SlowThreshold:              time.Second,   // Slow SQL threshold
+				  LogLevel:                   logger.Silent, // Log level
+				  IgnoreRecordNotFoundError: true,           // Ignore ErrRecordNotFound error for logger
+				  ParameterizedQueries:      true,           // Don't include params in the SQL log
+				  Colorful:                  false,          // Disable color
+				},
+			  )
 			// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
 			dsn := os.Getenv("DB_DSN")
-			db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+			db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+				Logger: newLogger,
+			})
 
 			if err == nil {
 				runDbMigration(db)
@@ -59,6 +73,7 @@ func runDbMigration(db *gorm.DB) {
 		&model.UserActivity{},
 		&model.CasbinRule{},
 		&model.CasbinRole{},
+		&model.Image{},
 	)
 
 	if err != nil {
@@ -84,6 +99,7 @@ func insertInitData(db *gorm.DB) {
 			{"P_type": model.GROUP_TYPE_G, "V0": model.USER_ROLE, "V1": model.GUEST_ROLE, "V2": "", "V3": "", "V4": "", "V5": ""},
 			{"P_type": model.GROUP_TYPE_P, "V0": model.GUEST_ROLE, "V1": "/", "V2": "GET", "V3": "", "V4": "", "V5": ""},
 			{"P_type": model.GROUP_TYPE_P, "V0": model.GUEST_ROLE, "V1": "/u/*", "V2": "*", "V3": "", "V4": "", "V5": ""},
+			{"P_type": model.GROUP_TYPE_P, "V0": model.USER_ROLE, "V1": "/member/*", "V2": "*", "V3": "", "V4": "", "V5": ""},
 			{"P_type": model.GROUP_TYPE_P, "V0": model.ADMIN_ROLE, "V1": "/admin/*", "V2": "*", "V3": "", "V4": "", "V5": ""},
 		})
 	}

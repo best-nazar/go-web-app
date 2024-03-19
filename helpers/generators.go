@@ -22,13 +22,13 @@ func GenerateSessionToken(data string, ip string) string {
 }
 
 // Gets data from token
-func RecoverSessionToken(token string, ip string) (int64, int, error) {
+func RecoverSessionToken(token string, ip string) (int64, string, error) {
 	decode := base64.NewDecoder(base64.StdEncoding, strings.NewReader(token))
 	data, err := io.ReadAll(decode)
 
 	if err != nil {
 		log.Fatal(err, data)
-		return 0, 0, err
+		return 0, "", err
 	} 
 
 	contArr := strings.Split(string(data), "==")
@@ -36,10 +36,10 @@ func RecoverSessionToken(token string, ip string) (int64, int, error) {
 	if len(contArr) != 3 || contArr[2] != ip {
 		err := errors.New("token recovery error")
 
-		return 0, 0, err
+		return 0, "", err
 	} else {
 		datetime, err := strconv.ParseInt(contArr[0], 10, 64)
-		userID, _ := strconv.Atoi(contArr[1])
+		userID := contArr[1]
 
 		return datetime, userID, err
 	}	

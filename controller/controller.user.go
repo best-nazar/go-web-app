@@ -4,9 +4,8 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
-	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/best-nazar/web-app/helpers"
@@ -19,14 +18,10 @@ import (
 func ShowUserHomePage(c *gin.Context) {
 	userLoggedIn, hasStatus := c.Get("is_logged_in")
 
-	if hasStatus {
-		isLogedIn := userLoggedIn.(bool)
-
-		if isLogedIn {
-			Render(c, gin.H{
-				"title":   "Successful Login",
-			}, "login-successful.html", http.StatusOK)
-		}
+	if hasStatus && userLoggedIn.(bool) {
+		Render(c, gin.H{
+			"title":   "Successful Login",
+		}, "login-successful.html", http.StatusOK)
 	}
 
 	c.AbortWithStatus(http.StatusForbidden)
@@ -45,6 +40,7 @@ func PerformLogin(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 
+
 	user, recNum := repository.GetUserByUsername(username)
 	// Check if the username/password combination is valid
 	if user.IsPasswordValid(password) && recNum > 0 {
@@ -54,8 +50,8 @@ func PerformLogin(c *gin.Context) {
 	} else {
 		// If the username/password combination is invalid,
 		// show the error message on the login page
-		c.Error(errors.New("user credentials|Invalid credentials provided"))
-		Render(c, gin.H{"errors": helpers.Errors(c)}, "login.html", http.StatusBadRequest)
+		c.Error(errors.New("invalid credentials provided"))
+		Render(c, gin.H{}, "login.html", http.StatusBadRequest)
 	}
 }
 
@@ -78,28 +74,24 @@ func ShowRegistrationPage(c *gin.Context) {
 
 func Register(c *gin.Context) {
 	var user model.User
-
 	e := c.ShouldBind(&user)
 
 	if e != nil {
 		c.Error(e)
 	}
 
-	if user.Password != c.PostForm("password_repeat") {
-		er := errors.New("credentials|provided password does not match")
-		c.Error(er)
-	}
-
-	if length := len(c.Errors); length > 0 {
-		Render(c, gin.H{"errors": helpers.Errors(c)}, "register.html", http.StatusBadRequest)
-		return
+	if err, ok := user.ComparePassword(c.PostForm("password_repeat")); !ok {
+		c.Error(err)
 	}
 
 	conf := c.MustGet("config").(model.Config)
 
-	if slices.Contains(strings.Split(conf.UsernameRestrictedWords, ","), user.Username) {
-		c.Error(errors.New("username|" + user.Username + " isn't available"))
-		Render(c, gin.H{"errors": helpers.Errors(c)}, "register.html", http.StatusBadRequest)
+	if err, ok := user.ValidateUsername(conf.UsernameRestrictedWords); !ok {
+		c.Error(err)
+	}
+
+	if length := len(c.Errors); length > 0 {
+		Render(c, gin.H{"form": &user}, "register.html", http.StatusBadRequest)
 		return
 	}
 
@@ -109,35 +101,33 @@ func Register(c *gin.Context) {
 		// If the user is created, set the token in a cookie and log the user in
 		saveAuthToken(c, u)
 
-		Render(c, gin.H{
-			"title": "Successful registration",
-			"user":  &u,
-			"admin": conf.ContactSupportEmail,
-		}, "register-successful.html", http.StatusOK)
+	c.Redirect(http.StatusFound, "/u/register/success")
 
 	} else {
 		// If the username/password combination is invalid,
 		// show the error message on the Register page
 		c.Error(err)
-		Render(c, gin.H{"errors": helpers.Errors(c)}, "register.html", http.StatusBadRequest)
+		Render(c, gin.H{"form": &u}, "register.html", http.StatusBadRequest)
 	}
 }
 
+func ShowRegistrationSuccess(c *gin.Context) {
+	Render(c, gin.H{
+		"title": "Successful registration",
+		"description": "New user registration",
+	}, "register-final.html", http.StatusOK)
+}
+
+// User is locked Info page
+// middleware.auth redirects in case user has status not active.
 func UserLocked(c *gin.Context) {
 	var user  *model.User
 	var nRows int64
-	var idModel = model.Id{}
 
-	uerr := c.ShouldBindQuery(&idModel)
+	id := c.Query("id")
 
-	if uerr == nil {
-		user, nRows = repository.FindUserById(idModel.String())
-	} else {
-		c.Error(uerr)
-	}
-
-	if nRows == 0 {
-		c.Error(errors.New("User ID|" +  idModel.String() + " not found"))
+	if user, nRows = repository.FindUserById(id); nRows == 0 {
+		c.Error(fmt.Errorf("user ID '%s' not found", id))
 	} else {	
 		conf := c.MustGet("config").(model.Config)
 
@@ -145,7 +135,7 @@ func UserLocked(c *gin.Context) {
 			"title": "Acount is locked ",
 			"user":  &user,
 			"admin": conf.ContactSupportEmail,
-		}, "register-successful.html", http.StatusOK)
+		}, "register-final.html", http.StatusOK)
 
 		return
 	}
@@ -160,13 +150,19 @@ func UserLocked(c *gin.Context) {
 // Register a new user with the given username and password
 func registerNewUser(user *model.User, password string, role string) (*model.User, error) {
 	if strings.TrimSpace(password) == "" {
-		return nil, errors.New("password| can't be empty")
-	} else if _, r := repository.GetUserByUsername(user.Username); r > 0 {
-		return nil, errors.New("username| " + user.Username + " isn't available")
+		return user, fmt.Errorf("password can't be empty")
+	} else if u, r := repository.GetUserByUsername(user.Username); r > 0 {
+		if u.Email == user.Email {
+			return user, fmt.Errorf("email '%s' can't be used for registration", user.Email)
+		}
+
+		return user, fmt.Errorf("username '%s' isn't available", user.Username)
 	}
+
 	user.Password = password
-	repository.AddNewUser(user)
-	repository.AddCasbinUserRole(user.Username, role)
+	if usr, err := repository.AddNewUser(user); err == nil {
+		repository.AddCasbinUserRole(usr.Username, role)
+	}
 
 	return user, nil
 }
@@ -174,7 +170,8 @@ func registerNewUser(user *model.User, password string, role string) (*model.Use
 // Save Auth data and token for UI
 func saveAuthToken(c *gin.Context, user *model.User) {
 	ipAddr := c.ClientIP()
-	data := strconv.FormatUint(uint64(user.ID), 10)
+	//data := strconv.FormatUint(uint64(user.ID), 10)
+	data:=user.ID.String()
 	token := helpers.GenerateSessionToken(data, ipAddr)
 	c.SetCookie("token", token, 3600, "", "", false, true)
 	c.Set("is_logged_in", true)

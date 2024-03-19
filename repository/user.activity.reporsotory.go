@@ -10,11 +10,11 @@ import (
 )
 
 // Logs new User Activity
-func AddUserActivity (activity, data string, userID int) *model.UserActivity {
+func AddUserActivity(activity, data string, userID string) *model.UserActivity {
 	userActivity := model.UserActivity{
 		Activity: activity,
 		Data: data,
-		UserID: uint(userID),
+		UserID: userID,
 	}
 
 	result := db.GetDBConnectionInstance().Create(&userActivity)
@@ -28,7 +28,7 @@ func AddUserActivity (activity, data string, userID int) *model.UserActivity {
 
 
 // Logs new User Activity
-func AddUserActivityData (data interface{}, userID int64) *model.UserActivity {
+func AddUserActivityData(data interface{}, userID string) *model.UserActivity {
 	strData, derr := json.Marshal(data)
 	store := ""
 	if derr!=nil {
@@ -40,7 +40,7 @@ func AddUserActivityData (data interface{}, userID int64) *model.UserActivity {
 	userActivity := model.UserActivity{
 		Activity: "data",
 		Data: store,
-		UserID: uint(userID),
+		UserID: userID,
 	}
 
 	result := db.GetDBConnectionInstance().Create(&userActivity)

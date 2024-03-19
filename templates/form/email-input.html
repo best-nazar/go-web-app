@@ -1,0 +1,25 @@
+<!--
+    EMAIL INPUT for FORM
+
+    Example:
+    { { template "email-input.html" dict 
+    "name" "string" 
+    "placeholder" "string"
+    "opt" "required readonly"
+    "value" "string"
+    "errors" map[string]string } }
+-->
+<div class="form-group mb-2">
+    <label for="id_{{ .name }}" class="form-label">{{ .placeholder }}</label>
+    <input 
+        type="email" 
+        class="form-control" 
+        id="id_{{ .name }}" 
+        name="{{ .name }}" 
+        placeholder="{{ .placeholder }}"
+        {{ .opt }}
+        value="{{ .value }}"
+    />
+    
+    {{ template "invalid-feedback.html" dict "field" .name "errors" .errors}}
+</div>

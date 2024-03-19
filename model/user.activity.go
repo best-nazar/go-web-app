@@ -8,7 +8,7 @@ type UserActivity struct {
 	Activity  string `json:"activity"`
 	Data      string `json:"data"`
 	CreatedAt int64  `json:"createdAt" gorm:"autoCreateTime"`
-	UserID    uint
+	UserID    string
 }
 
 type UsersList struct {

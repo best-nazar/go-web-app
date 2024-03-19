@@ -1,6 +1,4 @@
 <!--login.html-->
-
-<!--Embed the header.html template at this location-->
 {{ template "header.html" .}}
 
 <div class="row row-center-custom">
@@ -9,23 +7,14 @@
 
     <div class="panel panel-default">
       <div class="panel-body">
-        <!--Create a form that POSTs to the `/u/login` route-->
         <form class="form" action="/u/login" method="POST" name="uLogin">
-          <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="username" name="username" placeholder="Username">
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" placeholder="Password">
-          </div>
+            {{ template "text-input.html" dict "name" "username" "placeholder" "Username" "opt" "required"}}
+            {{ template "password-input.html" dict "name" "password" "placeholder" "Password" "opt" "required" }}
           <button type="submit" class="btn btn-primary">Login</button>
         </form>
       </div>
     </div>
-
 </div>
 </div>
 
-<!--Embed the footer.html template at this location-->
 {{ template "footer.html" .}}

@@ -1,0 +1,10 @@
+<!--
+    Input validation message below INPUT
+
+    dict required vars:
+    "errors" map[string]string
+    "field" "name"
+-->
+{{if and .errors (index .errors (capitalize .field)) }}
+    <div class="invalid-feedback d-block">{{ index .errors (capitalize .field) }}</div>
+{{ end }}

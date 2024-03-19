@@ -20,13 +20,11 @@
     {{ template "menu.html" . }}
 
     <!--If there are "errors", display the error-->
-    {{ if .errors }}
+    {{ if index .errors "message" }}
       <div class="container">  
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
           <div class="grid">
-            {{ range $error_custom := .errors }}
-              <div class="row">{{ $error_custom.Context }} {{ $error_custom.Message }}</div>
-            {{ end }}
+            <div class="row">{{ index .errors "message" }}</div>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>     

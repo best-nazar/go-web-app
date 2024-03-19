@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"strconv"
 
 	sqladapter "github.com/best-nazar/web-app/db"
 	"github.com/best-nazar/web-app/helpers"
@@ -32,6 +31,7 @@ func SetUserStatus() gin.HandlerFunc {
 		username, password, isAuth := c.Request.BasicAuth() // if request comes from API
 		token, _ := c.Cookie("token") //if request comes from UI
 
+
 		if isAuth {
 			user, err = getUserFromAuth(username)
 
@@ -46,7 +46,7 @@ func SetUserStatus() gin.HandlerFunc {
 		
 		if err == nil {
 			c.Set("is_logged_in", true) // Used for UI/Menu template (see render.go)
-			c.Set("user", user.ConvertToDTO()) //UpdateUser struct has no password property for security reason
+			c.Set("user", user) //UpdateUser struct has no password property for security reason
 
 			isUserActive(c, user)
 			//casbin RBAC uses BasicAuth() to get user for rule validation
@@ -54,7 +54,7 @@ func SetUserStatus() gin.HandlerFunc {
 			config := c.MustGet("config").(model.Config)
 
 			if config.UserActivityLogging && c.FullPath() != "" {
-				repository.AddUserActivity(c.Request.URL.String(), "path", int(user.ID))
+				repository.AddUserActivity(c.Request.URL.String(), "path", user.ID.String())
 			}
 
 			c.Next()
@@ -103,7 +103,7 @@ func getUserFromToken(token string, ip string) (*model.User, error) {
 		return nil, errt
 	}
 	
-	user, num := repository.FindUserById(strconv.Itoa(id))
+	user, num := repository.FindUserById(id)
 
 	if num == 0 {
 		return nil, errors.New("user not found")
@@ -128,7 +128,7 @@ func isUserActive(c *gin.Context, user *model.User) {
 		if !slices.Contains(urlToExclude, path) {
 
 			if user.Active == 0 {
-				c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/u/locked?id=%v", user.ID))
+				c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/u/locked?id=%v", user.ID.String()))
 				c.Abort()
 			}
 		}
@@ -137,13 +137,13 @@ func isUserActive(c *gin.Context, user *model.User) {
 func setUserGroups(c *gin.Context) {
 	casbinEnforcer, hasCE := c.Get("casbinEnforcer")
 	usr := c.MustGet("user")
-	var user *model.UserDTO
+	var user *model.User
 
 	if usr != nil {
-		user = usr.(*model.UserDTO)
+		user = usr.(*model.User)
 	}
 
-	if hasCE && usr != nil {
+	if hasCE && user != nil {
 		ce := casbinEnforcer.(*casbin.Enforcer)
 		groups, _ := ce.GetRolesForUser(user.Username, "")
 		c.Set("user_groups", groups)

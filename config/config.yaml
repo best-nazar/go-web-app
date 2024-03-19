@@ -1,9 +1,19 @@
 # Gin App configuration
+# Use spaces, but NOT tabs for indentation
 # Set a default role to newly registered user. Examples: guest, member, admin.
-default_casbin_group: member
+default_casbin_group: admin
 # Turn on/off user activity logging to the DB
 user-activity-logging: false
 #restricted words for registration as a 'username'. No spaces allowed.
 username_restricted_words: admin,member,guest,user
 #support(or admin's) email for public
 contact_support_email: admin@somedomain.com
+# upload image configuration
+image_config: 
+    # 500 Kb
+    size_limit: 500000
+    path: "user_data/"
+    extentions: 
+    - .jpg
+    - .jpeg
+    - .png

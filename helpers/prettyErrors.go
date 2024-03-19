@@ -2,66 +2,40 @@ package helpers
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
-type BodyError struct {
-	Context string
-	Message string
-}
-
-var prettyErrors []*BodyError
-var data *BodyError
-
-func Errors(c *gin.Context) []*BodyError {
-	prettyErrors = nil // reset error list
+func Errors(c *gin.Context) map[string]string {
+	var data = make(map[string]string)
 
 	for _, err := range c.Errors {
 		switch err.Err.(type) {
-		case validator.ValidationErrors:
-			convertErrorTypePrivate(err)
-		case error:
-			convertErrorTypeString(err)
-		default:
-			convertDefault(err)
+			case validator.ValidationErrors:
+				formErrors(err, data)
+			case error:
+				convertErrorTypeString(err, data)
+			default:
+				convertDefault(err)
 		}
 	}
 
-	return prettyErrors
+	return data
 }
 
-func convertErrorTypePrivate(err *gin.Error) {
+// error data will appear below the input field of a Form
+func formErrors(err *gin.Error, data map[string]string) {
 	e:=err.Err.(validator.ValidationErrors)
-	
-	for _, v := range e {
-		data = &BodyError{
-			Context: Capitalize(v.StructField() + ":"),
-			Message: fmt.Sprintf("Value '%s' failed the validation because of constraint '%s'", v.Value().(string), v.Tag()),
-		}
 
-		prettyErrors = append(prettyErrors, data)
+	for _, v := range e {
+		data[v.StructField()] = fmt.Sprintf("Value '%s' failed the validation because of constraint '%s' %s",v.Value().(string), v.Tag(), v.Param())
 	}
 }
 
-func convertErrorTypeString(err error) {
-		msgs := strings.Split(err.Error(), "|")
-
-		if len(msgs) == 2 {
-			data = &BodyError{
-				Context: Capitalize(msgs[0] + ":"),
-				Message: msgs[1],
-			}
-
-		} else {
-			data = &BodyError{
-				Context: "Error:",
-				Message: msgs[0],
-			}
-		}
-	prettyErrors = append(prettyErrors, data)
+// "massage" key data will appear on header error alert
+func convertErrorTypeString(err error, data map[string]string) {
+	data["message"] = Capitalize(err.Error())
 }
 
 func convertDefault(err *gin.Error) {

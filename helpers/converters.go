@@ -31,12 +31,25 @@ func StringToTimestamp (datetime string) int64 {
 
 //Converting timestamp to string date (see const dateFormat)
 // https://github.com/golang-module/carbon
-func TimestampToSting (timestamp int64) string {
-	return carbon.CreateFromTimestamp(timestamp).ToFormatString(dateFormat)
+func TimestampToSting (timestamp time.Time) string {
+	return carbon.CreateFromTimestamp(timestamp.Unix()).ToFormatString(dateFormat)
 }
 
 func Capitalize(str string) string {
 	runes := []rune(str)
 	runes[0] = unicode.ToUpper(runes[0])
 	return string(runes)
+}
+
+// Converts array of interface{} to slice
+// Example of usege is reading arrayy from yaml file: appConfig.ImageConfig["extentions"]
+func InterfaceArray(data interface{}) []string {
+	var arrays []string
+	exts := data.([]interface{})
+	
+	for _, val := range exts {
+		arrays = append(arrays, val.(string))
+	}
+
+	return arrays
 }

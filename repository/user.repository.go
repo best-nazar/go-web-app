@@ -5,7 +5,8 @@ import (
 
 	"github.com/best-nazar/web-app/db"
 	"github.com/best-nazar/web-app/model"
-	"gorm.io/gorm"
+	"github.com/best-nazar/web-app/model/dto"
+	"github.com/google/uuid"
 )
 
 // Gets User by the username
@@ -17,14 +18,14 @@ func GetUserByUsername(username string) (*model.User, int64) {
 }
 
 // Adds new User entity
-func AddNewUser(user *model.User) *model.User {
+func AddNewUser(user *model.User) (*model.User, error) {
 	result := db.GetDBConnectionInstance().Create(&user)
 
 	if result.Error!=nil {
-		log.Fatal(result.Error)
+		return nil, result.Error
 	}
 
-	return user
+	return user, nil
 }
 
 func GetUsers() []*model.User {
@@ -39,61 +40,52 @@ func GetUsers() []*model.User {
 }
 
 func FindUserById(id string) (*model.User, int64) {
-	var user *model.User
-	result := db.GetDBConnectionInstance().Find(&user, id)
+	uid, _ := uuid.Parse(id)
+	user := model.User{
+		Base: model.Base{
+			ID: uid,
+		},
+	}
+	result := db.GetDBConnectionInstance().Preload("Images").Find(&user)
 
 	if result.Error!=nil {
 		log.Fatal(result.Error)
 	}
 
-	return user, result.RowsAffected
+	return &user, result.RowsAffected
 }
 
-func UpdateUser(user *model.UserDTO) (*model.User, int64) {
-	var result *gorm.DB
-
-	lookupUser := model.User{
-		ID: user.ID,
-	}
-	
-	findResult := db.GetDBConnectionInstance().First(&lookupUser)
-	
-	if findResult.Error!=nil {
-		log.Fatal(findResult.Error)
+func UpdateUser(userDto *dto.UpdateUserDto) (*model.User, int64) {
+	uuid, _ := uuid.Parse(userDto.ID)
+	user := model.User{
+		Base: model.Base{
+			ID: uuid,
+		},
+		Name: userDto.Name,
+		Email: userDto.Email,
+		Birthday: userDto.Birthday,
 	}
 
-	if findResult.RowsAffected > 0 {
-		result = db.GetDBConnectionInstance().Model(&lookupUser).Updates(model.User{
-			Name: user.Name,
-			Email: user.Email,
-			Birthday: user.Birthday,
-			Active: user.Active,
-			SuspendedAt: user.SuspendedAt,
-		})
-	}
+	result := db.GetDBConnectionInstance().Model(&user).Updates(user)
 
-	return &lookupUser, result.RowsAffected
+	return &user, result.RowsAffected
 }
 
 // active value 0 | 1. Field can be updated only via interface{}
-func DeactivateUser(user *model.UserDTO) (int64, error) {
-	var result *gorm.DB
-
-	lookupUser := model.User{
-		ID: user.ID,
-	}
-	
-	findResult := db.GetDBConnectionInstance().First(&lookupUser)
-	
-	if findResult.Error!=nil {
-		log.Fatal(findResult.Error)
-	}
-
-	if findResult.RowsAffected > 0 {
-		result = db.GetDBConnectionInstance().Model(&lookupUser).Updates(map[string]interface{}{
+func DeactivateUser(user *model.User) (int64, error) {
+	result := db.GetDBConnectionInstance().Model(&user).Updates(map[string]interface{}{
 			"Active" : 0,
 			"SuspendedAt" : user.SuspendedAt,
 		})
-	}
-	return result.RowsAffected, findResult.Error
+
+	return result.RowsAffected, result.Error
+}
+
+func ActivateUser(user *model.User) (int64, error) {
+	result := db.GetDBConnectionInstance().Model(&user).Updates(map[string]interface{}{
+		"Active" : 1,
+		"SuspendedAt" : nil,
+	})
+
+	return result.RowsAffected, result.Error
 }
